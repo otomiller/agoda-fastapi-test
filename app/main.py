@@ -1,8 +1,17 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from sqlalchemy.orm import Session
 from db.db_connect import get_db_connection
 from pydantic import BaseModel
+from typing import List
+import httpx
+import os
+from .database import get_db
+from . import models, schemas
 
 app = FastAPI()
+
+API_KEY = os.getenv("AGODA_API_KEY")
+AGODA_API_URL = "https://sandbox-affiliateapi.agoda.com/api/v4/property/availability"
 
 class AvailabilityRequest(BaseModel):
     checkIn: str
@@ -10,84 +19,61 @@ class AvailabilityRequest(BaseModel):
     rooms: int
     adults: int
     children: int
-    hotelId: int
+    cityId: int
 
-class MultiHotelAvailabilityRequest(BaseModel):
-    checkIn: str
-    checkOut: str
-    rooms: int
-    adults: int
-    children: int
-    hotelId: list[int]
+async def fetch_availability(params):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(AGODA_API_URL, params=params)
+        return response.json()
 
-@app.get("/hotel/list")
-def get_hotels_by_city(city_id: int):
-    connection = get_db_connection()
-    with connection.cursor() as cursor:
-        query = "SELECT hotel_id, hotel_name FROM hotels WHERE city_id = %s"
-        cursor.execute(query, (city_id,))
-        hotels = cursor.fetchall()
-    return {"hotels": hotels}
+@app.get("/hotels", response_model=List[schemas.Hotel])
+def get_hotels_by_city(city_id: int, db: Session = Depends(get_db)):
+    hotels = db.query(models.Hotel).filter(models.Hotel.city_id == city_id).all()
+    return hotels
 
-@app.get("/hotel/details/{hotel_id}")
-def get_hotel_details(hotel_id: int):
-    connection = get_db_connection()
-    with connection.cursor() as cursor:
-        query = "SELECT * FROM hotels WHERE hotel_id = %s"
-        cursor.execute(query, (hotel_id,))
-        hotel = cursor.fetchone()
-        if hotel is None:
-            raise HTTPException(status_code=404, detail="Hotel not found")
-    return {"hotel": hotel}
-
-@app.get("/hotel/detailed_page/{hotel_id}")
-def get_hotel_detailed_page(hotel_id: int):
-    connection = get_db_connection()
-    data = {}
-
-    with connection.cursor() as cursor:
-        # Get hotel details
-        hotel_query = "SELECT * FROM hotels WHERE hotel_id = %s"
-        cursor.execute(hotel_query, (hotel_id,))
-        data["hotel"] = cursor.fetchone()
-
-        # Get hotel descriptions
-        description_query = "SELECT * FROM hotel_descriptions WHERE hotel_id = %s"
-        cursor.execute(description_query, (hotel_id,))
-        data["descriptions"] = cursor.fetchall()
-
-        # Get hotel facilities
-        facilities_query = "SELECT * FROM facilities WHERE hotel_id = %s"
-        cursor.execute(facilities_query, (hotel_id,))
-        data["facilities"] = cursor.fetchall()
-
-        # Get room types
-        room_query = "SELECT * FROM room_types WHERE hotel_id = %s"
-        cursor.execute(room_query, (hotel_id,))
-        data["rooms"] = cursor.fetchall()
-
-    return data
-
-@app.post("/hotel/specific_availability")
-def check_hotel_availability(data: AvailabilityRequest):
-    # Simulate API interaction for hotel availability
-    availability_response = {
-        "hotel_id": data.hotelId,
-        "availability_status": "Available",
-        "price_per_night": 150.00
-    }
-    return availability_response
-
-@app.post("/hotel/specific_availability/multi")
-def check_multi_hotel_availability(data: MultiHotelAvailabilityRequest):
-    # Simulate API interaction for multiple hotels
-    availability_results = []
-    for hotel_id in data.hotelId:
-        availability_response = {
-            "hotel_id": hotel_id,
-            "availability_status": "Available",
-            "price_per_night": 150.00
-        }
-        availability_results.append(availability_response)
+@app.get("/hotel/{hotel_id}", response_model=schemas.HotelDetail)
+def get_hotel_details(hotel_id: int, db: Session = Depends(get_db)):
+    hotel = db.query(models.Hotel).filter(models.Hotel.hotel_id == hotel_id).first()
+    if hotel is None:
+        raise HTTPException(status_code=404, detail="Hotel not found")
     
-    return availability_results
+    description = db.query(models.HotelDescription).filter(models.HotelDescription.hotel_id == hotel_id).first()
+    facilities = db.query(models.Facility).filter(models.Facility.hotel_id == hotel_id).all()
+    rooms = db.query(models.RoomType).filter(models.RoomType.hotel_id == hotel_id).all()
+    
+    return schemas.HotelDetail(
+        hotel=hotel,
+        description=description,
+        facilities=facilities,
+        rooms=rooms
+    )
+
+@app.post("/hotel/availability")
+async def check_hotel_availability(data: AvailabilityRequest, db: Session = Depends(get_db)):
+    hotels = db.query(models.Hotel).filter(models.Hotel.city_id == data.cityId).all()
+    hotel_ids = [hotel.hotel_id for hotel in hotels]
+    
+    params = {
+        "apikey": API_KEY,
+        "mdate": data.checkIn,
+        "mtypeid": 1,
+        "siteID": 1923846,
+        "checkIn": data.checkIn,
+        "checkOut": data.checkOut,
+        "rooms": data.rooms,
+        "adults": data.adults,
+        "children": data.children,
+        "propertyIds": ",".join(map(str, hotel_ids))
+    }
+    
+    availability_data = await fetch_availability(params)
+    
+    results = []
+    for property in availability_data.get("properties", []):
+        hotel = db.query(models.Hotel).filter(models.Hotel.hotel_id == property["propertyId"]).first()
+        if hotel:
+            hotel_data = schemas.Hotel.from_orm(hotel)
+            hotel_data.rooms = property.get("rooms", [])
+            results.append(hotel_data)
+    
+    return results
