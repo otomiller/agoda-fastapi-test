@@ -32,15 +32,15 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
                 hotel_id=hotel.hotel_id,
                 hotel_name=hotel.hotel_name,
                 star_rating=hotel.star_rating,
-                # Add other fields as necessary
+                rooms=[]  # Initialize with an empty list
             )
             
             # Find matching live data
-            live_data = next((prop for prop in availability_data["properties"] if prop["propertyId"] == hotel.hotel_id), None)
+            live_data = next((prop for prop in availability_data.get("properties", []) if prop["propertyId"] == str(hotel.hotel_id)), None)
             if live_data:
                 hotel_data.rooms = [
                     Room(roomId=room["roomId"], roomName=room["roomName"], price=room["totalPayment"]["inclusive"])
-                    for room in live_data["rooms"]
+                    for room in live_data.get("rooms", [])
                 ]
             
             combined_data.append(hotel_data)
