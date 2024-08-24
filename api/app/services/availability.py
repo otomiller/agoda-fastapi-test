@@ -15,7 +15,7 @@ async def fetch_availability(room_request: RoomRequest):
             "siteID": 1923846,
         }
         try:
-            response = await client.get(settings.AVAILABILITY_API_URL, params=params)
+            response = await client.post(settings.AVAILABILITY_API_URL, json=params)
             response.raise_for_status()  # This will raise an exception for HTTP errors
             return response.json()
         except httpx.HTTPError as e:
