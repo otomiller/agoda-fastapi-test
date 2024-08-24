@@ -1,0 +1,16 @@
+# Ignore configuration file with sensitive information
+config.py
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+
+# Ignore logs
+*.log
+
+# Ignore environment-specific files
+.env
+
+backups
+working_files
+agoda_api.md
