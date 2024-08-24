@@ -3,7 +3,7 @@ from app.core.config import settings
 from app.schemas.hotel import RoomRequest
 
 async def fetch_availability(room_request: RoomRequest):
-    async with httpx.AsyncClient(transport=httpx.AsyncHTTPTransport(retries=3)) as client:
+    async with httpx.AsyncClient() as client:
         params = {
             "apikey": settings.API_KEY,
             "checkIn": room_request.checkIn,
