@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List
 import httpx
+import traceback
 
 from app.core.database import get_db
 from app.schemas.hotel import RoomRequest, HotelResponse, Room
@@ -45,7 +46,9 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
         return combined_data
     except SQLAlchemyError as e:
         print(f"Database error: {e}")
-        raise HTTPException(status_code=500, detail="Database error occurred")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Database error occurred: {str(e)}")
     except Exception as e:
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
