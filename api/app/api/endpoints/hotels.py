@@ -20,10 +20,7 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
         hotels = result.scalars().all()
 
         # Fetch availability data
-        try:
-            availability_data = await fetch_availability(room_request)
-        except httpx.HTTPError as e:
-            raise HTTPException(status_code=500, detail=f"Error fetching availability data: {str(e)}")
+        availability_data = await fetch_availability(room_request)
 
         # Combine database and availability data
         combined_data = []
@@ -47,6 +44,8 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
 
         return combined_data
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        print(f"Database error: {e}")
+        raise HTTPException(status_code=500, detail="Database error occurred")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
