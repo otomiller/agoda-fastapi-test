@@ -10,7 +10,7 @@ class RoomRequest(BaseModel):
     cityId: int
 
 class Room(BaseModel):
-    roomId: int
+    roomId: str
     roomName: str
     price: float
 
@@ -19,6 +19,3 @@ class HotelResponse(BaseModel):
     hotel_name: str
     star_rating: float
     rooms: Optional[List[Room]] = None
-
-    class Config:
-        from_attributes = True
