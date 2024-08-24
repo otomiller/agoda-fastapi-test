@@ -7,9 +7,6 @@ DB_PARAMS = {
     'port': '5432'
 }
 
-# API parameters
-API_KEY = 'A7AC1807-3508-46A5-B189-4BBC43978FF7'
-
 API_URL = f'https://affiliatefeed.agoda.com/datafeeds/feed/getfeed?apikey={API_KEY}&mtypeid=1&feed_id=19&mHotel_id='
 
 HOTEL_IDS = [
