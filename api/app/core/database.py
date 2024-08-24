@@ -1,8 +1,12 @@
 from app.core.database_config import AsyncSessionLocal
+from sqlalchemy.exc import SQLAlchemyError
 
 async def get_db():
-    async with AsyncSessionLocal() as session:
-        try:
+    try:
+        async with AsyncSessionLocal() as session:
             yield session
-        finally:
-            await session.close()
+    except SQLAlchemyError as e:
+        print(f"Database error: {e}")
+        raise
+    finally:
+        await session.close()
