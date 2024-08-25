@@ -21,7 +21,7 @@ async def fetch_hotel_list(city_id: int, db: AsyncSession):
         logger.error(f"Error fetching hotel list: {e}")
         raise
 
-async def fetch_hotel_detail(hotel_id: int, db: AsyncSession):
+async def fetch_hotel_detail(db: AsyncSession, hotel_id: int):
     try:
         result = await db.execute(select(Hotel).where(Hotel.hotel_id == hotel_id))
         hotel = result.scalar_one_or_none()
