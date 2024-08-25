@@ -30,9 +30,9 @@ async def fetch_hotel_detail(db: AsyncSession, hotel_id: int):
                 'hotel_id': hotel.hotel_id,
                 'hotel_name': hotel.hotel_name,
                 'star_rating': hotel.star_rating,
-                'address': hotel.address,
-                'description': hotel.description,
-                'amenities': hotel.amenities,
+                'address': getattr(hotel, 'address', ''),
+                'description': getattr(hotel, 'description', ''),
+                'amenities': getattr(hotel, 'amenities', []),
             }
         return None
     except Exception as e:
