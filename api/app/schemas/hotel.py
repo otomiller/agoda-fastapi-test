@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Union
+from pydantic import BaseModel
 
 class RoomRequest(BaseModel):
     cityId: int
@@ -25,7 +26,7 @@ class Image(BaseModel):
     url: str
 
 class ImageCategory(BaseModel):
-    __root__: Dict[str, List[Image]]
+    __root__: Dict[str, List[str]]
 
 class Facility(BaseModel):
     property_group_description: str
