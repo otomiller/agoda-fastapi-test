@@ -40,9 +40,9 @@ async def get_hotel_detail(hotel_id: int, search_id: str, db: AsyncSession = Dep
             hotel_id=hotel['hotel_id'],
             hotel_name=hotel['hotel_name'],
             star_rating=hotel['star_rating'],
-            address=hotel['address'],
-            description=hotel['description'],
-            amenities=hotel['amenities'],
+            address=hotel.get('address', ''),
+            description=hotel.get('description', ''),
+            amenities=hotel.get('amenities', []),
             rooms=availability_data.get("rooms", [])
         )
 
