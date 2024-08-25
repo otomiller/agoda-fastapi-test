@@ -69,7 +69,7 @@ logger = logging.getLogger(__name__)
 async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_db)):
     try:
         logger.info(f"Fetching hotels for city ID: {room_request.cityId}")
-        hotels = await fetch_hotel_list(room_request.cityId)
+        hotels = await fetch_hotel_list(room_request.cityId, db)
 
         if not hotels:
             logger.warning(f"No hotels found for the city ID: {room_request.cityId}")
