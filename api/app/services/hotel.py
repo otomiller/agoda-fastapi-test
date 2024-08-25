@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.models.hotel import Hotel, HotelDescription, Address, Picture, SearchResult
 from typing import List, Dict
+import logging
 import json
 
 async def get_hotels_from_db(db: AsyncSession, city_id: int) -> List[Dict]:
@@ -34,6 +35,17 @@ async def get_hotels_from_db(db: AsyncSession, city_id: int) -> List[Dict]:
 
     result = await db.execute(query)
     return [dict(row) for row in result.fetchall()]
+
+# async def save_search_result(db: AsyncSession, search_id: str | int, response_data: dict):
+#     """
+#     Save the search result to the database.
+#     """
+#     search_result = SearchResult(
+#         search_id=str(search_id),  # Convert to string
+#         response_data=json.dumps(response_data)
+#     )
+#     db.add(search_result)
+#     await db.commit()
 
 async def save_search_result(db: AsyncSession, search_id: str | int, response_data: dict):
     """

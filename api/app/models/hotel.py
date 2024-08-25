@@ -1,6 +1,10 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, JSON
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from app.core.database_config import Base
+
+Base = declarative_base()
 
 class Hotel(Base):
     __tablename__ = "hotels"
@@ -48,4 +52,4 @@ class SearchResult(Base):
     __tablename__ = "search_results"
 
     search_id = Column(String, primary_key=True)
-    response_data = Column(JSON)
+    response_data = Column(JSONB)  # Store as JSONB in PostgreSQL

@@ -86,8 +86,12 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
             
             # Save the search result to the database
             search_id = availability_data.get('searchId', str(room_request.cityId))  # Use cityId as fallback if searchId is not present
-            await save_search_result(db, search_id, availability_data)
-            logger.info(f"Search result saved with search ID: {search_id}")
+            try:
+                await save_search_result(db, search_id, availability_data)
+                logger.info(f"Search result saved with search ID: {search_id}")
+            except SQLAlchemyError as e:
+                logger.error(f"Error saving search result: {e}")
+                # Continue with the request even if saving the search result fails
         except httpx.HTTPError as e:
             logger.error(f"HTTP error occurred: {e}")
             logger.error(f"Response content: {e.response.text if e.response else 'No response content'}")
