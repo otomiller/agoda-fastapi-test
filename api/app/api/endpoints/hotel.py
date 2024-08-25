@@ -27,7 +27,7 @@ async def get_hotel_detail(hotel_id: int, search_id: str, db: AsyncSession = Dep
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
                 logger.warning(f"No availability data found for hotel ID: {hotel_id}")
-                availability_data = {"rooms": []}
+                availability_data = {"room_types": []}
             else:
                 logger.error(f"Error fetching availability data: {e}")
                 raise HTTPException(status_code=500, detail=f"Error fetching availability data: {str(e)}")
@@ -37,13 +37,13 @@ async def get_hotel_detail(hotel_id: int, search_id: str, db: AsyncSession = Dep
 
         logger.info("Combining hotel and availability data")
         hotel_detail = HotelDetailResponse(
-            hotel_id=hotel['hotel_id'],
             hotel_name=hotel['hotel_name'],
-            star_rating=hotel['star_rating'],
-            address=hotel.get('address', ''),
-            description=hotel.get('description', ''),
-            amenities=hotel.get('amenities', []),
-            rooms=availability_data.get("rooms", [])
+            address_line_1=hotel.get('address', ''),
+            longitude=hotel.get('longitude', 0.0),
+            latitude=hotel.get('latitude', 0.0),
+            images=hotel.get('images', {}),
+            facilities=hotel.get('facilities', []),
+            room_types=availability_data.get("room_types", [])
         )
 
         logger.info(f"Returning hotel detail for hotel ID: {hotel_id}")
