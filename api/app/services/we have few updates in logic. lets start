@@ -1,0 +1,3191 @@
+we have few updates in logic. lets start from the beggining
+
+Front end dev sending us request like this 
+
+{
+  "checkIn": "2024-11-23",
+  "checkOut": "2024-11-28",
+  "rooms": 1,
+  "adults": 2,
+  "children": 2,
+  "cityId": 17072
+}
+
+we go to postgresql and making request to get all hotel ids in that particular cities, here is query
+SELECT hotel_id from public.hotels where city_id = 17072, 1702 is a n example city id we replace it with whatever will be requested from user side
+this query return list of hotel ids availabile in that particular city, then we make two paralel requests
+
+fetch_availability_from_api and get_hotel_data_from_db, the outputs will be combined with combine_hotel_and_api_data in python, lets start with fetch_availability_from_api.
+
+
+fetch_availability_from_api
+
+here we send request in thi format
+
+{
+    "waitTime": 60,
+    "criteria": {
+        "propertyIds": [
+            2937
+            17072
+        ],
+        "checkIn": "2024-10-23",
+        "checkOut": "2024-10-28",
+        "rooms": 1,
+        "adults": 2,
+        "children": 2,
+        "childrenAges": [5,6],
+        "language": "en-us",
+        "currency": "USD",
+        "userCountry": "US"
+    },
+    "features": {
+        "ratesPerProperty": 25,
+        "extra": [
+            "content",
+            "surchargeDetail",
+            "CancellationDetail",
+            "BenefitDetail",
+            "dailyRate",
+            "taxDetail",
+            "rateDetail",
+            "promotionDetail"
+        ]
+    }
+}
+
+this is availability endpoint which gives us back response like this 
+
+{
+    "searchId": 1643212383886940000,
+    "properties": [
+        {
+            "propertyId": 2937,
+            "propertyName": "The Venetian Resort",
+            "translatedPropertyName": "The Venetian Resort",
+            "propertyUtcOffset": "-07:00",
+            "rooms": [
+                {
+                    "roomId": 3028175,
+                    "blockId": "MDhkZjY2ZTItMDc3Mi0yYjE4LTUyYTQtMTBkODZiYmIzN2QxOjMzMg==",
+                    "roomName": "Luxury King Suite City View",
+                    "parentRoomName": "Luxury King Suite City View",
+                    "translatedRoomName": "Luxury King Suite City View",
+                    "blockIdBackup": "08df66e2-0772-2b18-52a4-10d86bbb37d1",
+                    "parentRoomId": 3028175,
+                    "ratePlanId": 11969931,
+                    "freeWifi": false,
+                    "remainingRooms": 150,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": false,
+                    "freeCancellation": true,
+                    "totalPayment": {
+                        "exclusive": 2927.35,
+                        "inclusive": 3319.03,
+                        "tax": 391.68,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 585.47,
+                        "inclusive": 663.81,
+                        "tax": 78.34,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 585.47,
+                        "inclusive": 663.81,
+                        "tax": 78.34,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 241.19,
+                            "inclusive": 273.46,
+                            "tax": 32.27,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 320.32,
+                            "inclusive": 363.17,
+                            "tax": 42.85,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 507.34,
+                            "inclusive": 575.23,
+                            "tax": 67.89,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 528.93,
+                            "inclusive": 599.70,
+                            "tax": 70.77,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 1329.57,
+                            "inclusive": 1507.47,
+                            "tax": 177.90,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "promotionDetail": {
+                        "promotionId": -1,
+                        "codeEligible": false,
+                        "description": "",
+                        "typeDescription": "Limited Time Offer.",
+                        "savingAmount": 174.99,
+                        "promotionTypeId": 4078
+                    },
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 12.72
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 73.72
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "3D1N_1N",
+                        "cancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "translatedCancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 4,
+                                "charge": "N",
+                                "value": 0
+                            },
+                            {
+                                "days": 3,
+                                "charge": "N",
+                                "value": 1
+                            },
+                            {
+                                "days": 0,
+                                "charge": "N",
+                                "value": 1
+                            }
+                        ],
+                        "date": [
+                            {
+                                "before": "2024-10-20T00:00:00",
+                                "rate": {
+                                    "exclusive": 0.00,
+                                    "inclusive": 0.00,
+                                    "tax": 0.00,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "before": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 241.19,
+                                    "inclusive": 273.46,
+                                    "tax": 32.27,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "onward": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 241.19,
+                                    "inclusive": 273.46,
+                                    "tax": 32.27,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": [
+                        {
+                            "id": 95,
+                            "benefitName": "Free WiFi",
+                            "translatedBenefitName": "Free WiFi"
+                        }
+                    ]
+                },
+                {
+                    "roomId": 3028166,
+                    "blockId": "ZjhjMjUyZmMtMWRkNy1lM2Q0LWQxNDUtMzM1NWYxYTY5YTk2OjMzMg==",
+                    "roomName": "Luxury Two Queen Suite City View",
+                    "parentRoomName": "Luxury Two Queen Suite City View",
+                    "translatedRoomName": "Luxury Two Queen Suite City View",
+                    "blockIdBackup": "f8c252fc-1dd7-e3d4-d145-3355f1a69a96",
+                    "parentRoomId": 3028166,
+                    "ratePlanId": 11969931,
+                    "freeWifi": false,
+                    "remainingRooms": 150,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": false,
+                    "freeCancellation": true,
+                    "totalPayment": {
+                        "exclusive": 3042.46,
+                        "inclusive": 3449.54,
+                        "tax": 407.08,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 608.49,
+                        "inclusive": 689.91,
+                        "tax": 81.42,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 608.49,
+                        "inclusive": 689.91,
+                        "tax": 81.42,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 248.38,
+                            "inclusive": 281.61,
+                            "tax": 33.23,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 327.51,
+                            "inclusive": 371.33,
+                            "tax": 43.82,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 528.93,
+                            "inclusive": 599.70,
+                            "tax": 70.77,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 550.51,
+                            "inclusive": 624.17,
+                            "tax": 73.66,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 1387.13,
+                            "inclusive": 1572.73,
+                            "tax": 185.60,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "promotionDetail": {
+                        "promotionId": -1,
+                        "codeEligible": false,
+                        "description": "",
+                        "typeDescription": "Limited Time Offer.",
+                        "savingAmount": 181.87,
+                        "promotionTypeId": 4078
+                    },
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 13.22
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 76.62
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "3D1N_1N",
+                        "cancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "translatedCancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 4,
+                                "charge": "N",
+                                "value": 0
+                            },
+                            {
+                                "days": 3,
+                                "charge": "N",
+                                "value": 1
+                            },
+                            {
+                                "days": 0,
+                                "charge": "N",
+                                "value": 1
+                            }
+                        ],
+                        "date": [
+                            {
+                                "before": "2024-10-20T00:00:00",
+                                "rate": {
+                                    "exclusive": 0.00,
+                                    "inclusive": 0.00,
+                                    "tax": 0.00,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "before": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 248.38,
+                                    "inclusive": 281.61,
+                                    "tax": 33.23,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "onward": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 248.38,
+                                    "inclusive": 281.61,
+                                    "tax": 33.23,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": [
+                        {
+                            "id": 95,
+                            "benefitName": "Free WiFi",
+                            "translatedBenefitName": "Free WiFi"
+                        }
+                    ]
+                },
+                {
+                    "roomId": 3028175,
+                    "blockId": "ZGI3M2VkOTItYjU5NC0wNTAzLWRlM2UtY2Y2MjYyYThjNjY3OjMzMg==",
+                    "roomName": "Luxury King Suite City View",
+                    "parentRoomName": "Luxury King Suite City View",
+                    "translatedRoomName": "Luxury King Suite City View",
+                    "blockIdBackup": "db73ed92-b594-0503-de3e-cf6262a8c667",
+                    "parentRoomId": 3028175,
+                    "ratePlanId": 12816151,
+                    "freeWifi": false,
+                    "remainingRooms": 150,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": false,
+                    "freeCancellation": false,
+                    "totalPayment": {
+                        "exclusive": 3071.14,
+                        "inclusive": 3482.06,
+                        "tax": 410.92,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 614.23,
+                        "inclusive": 696.41,
+                        "tax": 82.18,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 614.23,
+                        "inclusive": 696.41,
+                        "tax": 82.18,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 260.72,
+                            "inclusive": 295.60,
+                            "tax": 34.88,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 333.82,
+                            "inclusive": 378.49,
+                            "tax": 44.67,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 549.26,
+                            "inclusive": 622.75,
+                            "tax": 73.49,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 570.76,
+                            "inclusive": 647.13,
+                            "tax": 76.37,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 1356.58,
+                            "inclusive": 1538.09,
+                            "tax": 181.51,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 15.49
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 77.48
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "365D100P_100P",
+                        "cancellationText": "This booking is Non-Refundable and cannot be amended or modified. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "translatedCancellationText": "This booking is Non-Refundable and cannot be amended or modified. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 365,
+                                "charge": "P",
+                                "value": 100
+                            }
+                        ],
+                        "date": [
+                            {
+                                "onward": "2024-08-24T00:00:00",
+                                "rate": {
+                                    "exclusive": 3071.14,
+                                    "inclusive": 3482.06,
+                                    "tax": 410.92,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": []
+                },
+                {
+                    "roomId": 3028166,
+                    "blockId": "NjkzZGM1ZDQtOTlhYS1kYTM2LTQ2ZTgtMTUwMGYyNWQ3NTMxOjMzMg==",
+                    "roomName": "Luxury Two Queen Suite City View",
+                    "parentRoomName": "Luxury Two Queen Suite City View",
+                    "translatedRoomName": "Luxury Two Queen Suite City View",
+                    "blockIdBackup": "693dc5d4-99aa-da36-46e8-1500f25d7531",
+                    "parentRoomId": 3028166,
+                    "ratePlanId": 12816151,
+                    "freeWifi": false,
+                    "remainingRooms": 150,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": false,
+                    "freeCancellation": false,
+                    "totalPayment": {
+                        "exclusive": 3203.02,
+                        "inclusive": 3631.58,
+                        "tax": 428.56,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 640.6,
+                        "inclusive": 726.32,
+                        "tax": 85.72,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 640.6,
+                        "inclusive": 726.32,
+                        "tax": 85.72,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 269.32,
+                            "inclusive": 305.35,
+                            "tax": 36.03,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 342.42,
+                            "inclusive": 388.24,
+                            "tax": 45.82,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 577.93,
+                            "inclusive": 655.25,
+                            "tax": 77.32,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 599.43,
+                            "inclusive": 679.64,
+                            "tax": 80.21,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 1413.92,
+                            "inclusive": 1603.10,
+                            "tax": 189.18,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 16.18
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 80.82
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "365D100P_100P",
+                        "cancellationText": "This booking is Non-Refundable and cannot be amended or modified. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "translatedCancellationText": "This booking is Non-Refundable and cannot be amended or modified. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 365,
+                                "charge": "P",
+                                "value": 100
+                            }
+                        ],
+                        "date": [
+                            {
+                                "onward": "2024-08-24T00:00:00",
+                                "rate": {
+                                    "exclusive": 3203.02,
+                                    "inclusive": 3631.58,
+                                    "tax": 428.56,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": []
+                },
+                {
+                    "roomId": 752835270,
+                    "blockId": "YzNiN2JmMDctMTFhNC1iYzNiLTM4NGUtM2IyMmZjZTc5ZjM5OjMzMg==",
+                    "roomName": "Venetian Luxury Sphere View King Suite",
+                    "parentRoomName": "Venetian Luxury Sphere View King Suite",
+                    "translatedRoomName": "Venetian Luxury Sphere View King Suite",
+                    "blockIdBackup": "c3b7bf07-11a4-bc3b-384e-3b22fce79f39",
+                    "parentRoomId": 752835270,
+                    "ratePlanId": 11969931,
+                    "freeWifi": false,
+                    "remainingRooms": 60,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": false,
+                    "freeCancellation": true,
+                    "totalPayment": {
+                        "exclusive": 3330.2,
+                        "inclusive": 3775.78,
+                        "tax": 445.58,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 666.04,
+                        "inclusive": 755.16,
+                        "tax": 89.12,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 666.04,
+                        "inclusive": 755.16,
+                        "tax": 89.12,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 269.96,
+                            "inclusive": 306.08,
+                            "tax": 36.12,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 356.28,
+                            "inclusive": 403.95,
+                            "tax": 47.67,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 572.09,
+                            "inclusive": 648.64,
+                            "tax": 76.55,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 600.87,
+                            "inclusive": 681.26,
+                            "tax": 80.39,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 1531.00,
+                            "inclusive": 1735.85,
+                            "tax": 204.85,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "promotionDetail": {
+                        "promotionId": -1,
+                        "codeEligible": false,
+                        "description": "",
+                        "typeDescription": "Limited Time Offer.",
+                        "savingAmount": 199.07,
+                        "promotionTypeId": 4078
+                    },
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 14.46
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 83.87
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "3D1N_1N",
+                        "cancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "translatedCancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 4,
+                                "charge": "N",
+                                "value": 0
+                            },
+                            {
+                                "days": 3,
+                                "charge": "N",
+                                "value": 1
+                            },
+                            {
+                                "days": 0,
+                                "charge": "N",
+                                "value": 1
+                            }
+                        ],
+                        "date": [
+                            {
+                                "before": "2024-10-20T00:00:00",
+                                "rate": {
+                                    "exclusive": 0.00,
+                                    "inclusive": 0.00,
+                                    "tax": 0.00,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "before": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 269.96,
+                                    "inclusive": 306.08,
+                                    "tax": 36.12,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "onward": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 269.96,
+                                    "inclusive": 306.08,
+                                    "tax": 36.12,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": [
+                        {
+                            "id": 95,
+                            "benefitName": "Free WiFi",
+                            "translatedBenefitName": "Free WiFi"
+                        }
+                    ]
+                },
+                {
+                    "roomId": 370641526,
+                    "blockId": "MGM2NDM1ZDItM2E4YS1jYTQ5LWY4MWUtMTBhZTIzYzhjZjE2OjMzMg==",
+                    "roomName": "The Venetian Prestige Club Lounge Luxury King Suite",
+                    "parentRoomName": "The Venetian Prestige Club Lounge Luxury King Suite",
+                    "translatedRoomName": "The Venetian Prestige Club Lounge Luxury King Suite",
+                    "blockIdBackup": "0c6435d2-3a8a-ca49-f81e-10ae23c8cf16",
+                    "parentRoomId": 370641526,
+                    "ratePlanId": 11969931,
+                    "freeWifi": false,
+                    "remainingRooms": 105,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": false,
+                    "freeCancellation": true,
+                    "totalPayment": {
+                        "exclusive": 3865.43,
+                        "inclusive": 4382.63,
+                        "tax": 517.20,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 773.09,
+                        "inclusive": 876.53,
+                        "tax": 103.44,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 773.09,
+                        "inclusive": 876.53,
+                        "tax": 103.44,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 393.31,
+                            "inclusive": 445.94,
+                            "tax": 52.63,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 465.25,
+                            "inclusive": 527.50,
+                            "tax": 62.25,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 649.88,
+                            "inclusive": 736.84,
+                            "tax": 86.96,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 678.66,
+                            "inclusive": 769.46,
+                            "tax": 90.80,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 1678.33,
+                            "inclusive": 1902.89,
+                            "tax": 224.56,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "promotionDetail": {
+                        "promotionId": -1,
+                        "codeEligible": false,
+                        "description": "",
+                        "typeDescription": "Limited Time Offer.",
+                        "savingAmount": 231.07,
+                        "promotionTypeId": 4078
+                    },
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 16.79
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 97.34
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "3D1N_1N",
+                        "cancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "translatedCancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 4,
+                                "charge": "N",
+                                "value": 0
+                            },
+                            {
+                                "days": 3,
+                                "charge": "N",
+                                "value": 1
+                            },
+                            {
+                                "days": 0,
+                                "charge": "N",
+                                "value": 1
+                            }
+                        ],
+                        "date": [
+                            {
+                                "before": "2024-10-20T00:00:00",
+                                "rate": {
+                                    "exclusive": 0.00,
+                                    "inclusive": 0.00,
+                                    "tax": 0.00,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "before": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 393.31,
+                                    "inclusive": 445.94,
+                                    "tax": 52.63,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "onward": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 393.31,
+                                    "inclusive": 445.94,
+                                    "tax": 52.63,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": [
+                        {
+                            "id": 95,
+                            "benefitName": "Free WiFi",
+                            "translatedBenefitName": "Free WiFi"
+                        }
+                    ]
+                },
+                {
+                    "roomId": 752835270,
+                    "blockId": "OTYyMWMxMDQtY2JkOC01Mzk5LWYyYmQtMDNhM2VhZjQxZjMyOjMzMg==",
+                    "roomName": "Venetian Luxury Sphere View King Suite",
+                    "parentRoomName": "Venetian Luxury Sphere View King Suite",
+                    "translatedRoomName": "Venetian Luxury Sphere View King Suite",
+                    "blockIdBackup": "9621c104-cbd8-5399-f2bd-03a3eaf41f32",
+                    "parentRoomId": 752835270,
+                    "ratePlanId": 12816151,
+                    "freeWifi": false,
+                    "remainingRooms": 60,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": false,
+                    "freeCancellation": false,
+                    "totalPayment": {
+                        "exclusive": 4136.12,
+                        "inclusive": 4689.53,
+                        "tax": 553.41,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 827.22,
+                        "inclusive": 937.91,
+                        "tax": 110.69,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 827.22,
+                        "inclusive": 937.91,
+                        "tax": 110.69,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 331.99,
+                            "inclusive": 376.41,
+                            "tax": 44.42,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 430.44,
+                            "inclusive": 488.03,
+                            "tax": 57.59,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 741.81,
+                            "inclusive": 841.06,
+                            "tax": 99.25,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 779.23,
+                            "inclusive": 883.49,
+                            "tax": 104.26,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 1852.65,
+                            "inclusive": 2100.54,
+                            "tax": 247.89,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 20.88
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 104.36
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "365D100P_100P",
+                        "cancellationText": "This booking is Non-Refundable and cannot be amended or modified. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "translatedCancellationText": "This booking is Non-Refundable and cannot be amended or modified. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 365,
+                                "charge": "P",
+                                "value": 100
+                            }
+                        ],
+                        "date": [
+                            {
+                                "onward": "2024-08-24T00:00:00",
+                                "rate": {
+                                    "exclusive": 4136.12,
+                                    "inclusive": 4689.53,
+                                    "tax": 553.41,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": []
+                },
+                {
+                    "roomId": 790373532,
+                    "blockId": "NDRlOWVjOTgtYmNmMy01ZmIxLTUwNzItNGVlZGI1NGQ1Njg0OjI4MDM3",
+                    "roomName": "Prestige Luxury King Suite Club Lounge",
+                    "parentRoomName": "Prestige Luxury King Suite Club Lounge",
+                    "translatedRoomName": "Prestige Luxury King Suite Club Lounge",
+                    "blockIdBackup": "44e9ec98-bcf3-5fb1-5072-4eedb54d5684",
+                    "parentRoomId": 673274697,
+                    "ratePlanId": 0,
+                    "freeWifi": false,
+                    "remainingRooms": 1,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": true,
+                    "freeCancellation": false,
+                    "totalPayment": {
+                        "exclusive": 4207.6,
+                        "inclusive": 4770.57,
+                        "tax": 562.97,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 841.52,
+                        "inclusive": 954.11,
+                        "tax": 112.59,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 841.52,
+                        "inclusive": 954.11,
+                        "tax": 112.59,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 841.63,
+                            "inclusive": 954.24,
+                            "tax": 112.61,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 841.50,
+                            "inclusive": 954.09,
+                            "tax": 112.59,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 841.49,
+                            "inclusive": 954.08,
+                            "tax": 112.59,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 841.49,
+                            "inclusive": 954.08,
+                            "tax": 112.59,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 841.49,
+                            "inclusive": 954.08,
+                            "tax": 112.59,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 18.06
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 105.93
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "60D15P_3D100P_100P",
+                        "cancellationText": "Any cancellation received within 60 days prior to the arrival date will incur a charge of 15% of the booking value. Any cancellation received within 3 days prior to the arrival date will be charged for the entire stay. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "translatedCancellationText": "Any cancellation received within 60 days prior to the arrival date will incur a charge of 15% of the booking value. Any cancellation received within 3 days prior to the arrival date will be charged for the entire stay. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 61,
+                                "charge": "P",
+                                "value": 0
+                            },
+                            {
+                                "days": 60,
+                                "charge": "P",
+                                "value": 15
+                            },
+                            {
+                                "days": 3,
+                                "charge": "P",
+                                "value": 100
+                            },
+                            {
+                                "days": 0,
+                                "charge": "P",
+                                "value": 100
+                            }
+                        ],
+                        "date": [
+                            {
+                                "before": "2024-08-24T00:00:00",
+                                "rate": {
+                                    "exclusive": 0.00,
+                                    "inclusive": 0.00,
+                                    "tax": 0.00,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "before": "2024-10-20T00:00:00",
+                                "rate": {
+                                    "exclusive": 631.14,
+                                    "inclusive": 715.59,
+                                    "tax": 84.44,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "before": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 4207.60,
+                                    "inclusive": 4770.57,
+                                    "tax": 562.97,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "onward": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 4207.60,
+                                    "inclusive": 4770.57,
+                                    "tax": 562.97,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": [
+                        {
+                            "id": 1,
+                            "benefitName": "Breakfast",
+                            "translatedBenefitName": "Breakfast"
+                        }
+                    ]
+                },
+                {
+                    "roomId": 790373532,
+                    "blockId": "MDVhNTNjNzctM2NhNC1jZTI4LTY5NmUtMGFmYjJlNTQzZTVjOjI4MDM3",
+                    "roomName": "Prestige Luxury King Suite Club Lounge",
+                    "parentRoomName": "Prestige Luxury King Suite Club Lounge",
+                    "translatedRoomName": "Prestige Luxury King Suite Club Lounge",
+                    "blockIdBackup": "05a53c77-3ca4-ce28-696e-0afb2e543e5c",
+                    "parentRoomId": 673274697,
+                    "ratePlanId": 0,
+                    "freeWifi": false,
+                    "remainingRooms": 1,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": true,
+                    "freeCancellation": true,
+                    "totalPayment": {
+                        "exclusive": 4228.96,
+                        "inclusive": 4794.78,
+                        "tax": 565.82,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 845.79,
+                        "inclusive": 958.96,
+                        "tax": 113.17,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 845.79,
+                        "inclusive": 958.96,
+                        "tax": 113.17,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 845.88,
+                            "inclusive": 959.06,
+                            "tax": 113.18,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 845.77,
+                            "inclusive": 958.93,
+                            "tax": 113.16,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 845.77,
+                            "inclusive": 958.93,
+                            "tax": 113.16,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 845.77,
+                            "inclusive": 958.93,
+                            "tax": 113.16,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 845.77,
+                            "inclusive": 958.93,
+                            "tax": 113.16,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 18.17
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 106.48
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "54D15P_3D100P_100P",
+                        "cancellationText": "Risk-free booking! Cancel before 2024-08-30 and you'll pay nothing! Any cancellation received within 54 days prior to the arrival date will incur a charge of 15% of the booking value. Any cancellation received within 3 days prior to the arrival date will be charged for the entire stay. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "translatedCancellationText": "Risk-free booking! Cancel before 2024-08-30 and you'll pay nothing! Any cancellation received within 54 days prior to the arrival date will incur a charge of 15% of the booking value. Any cancellation received within 3 days prior to the arrival date will be charged for the entire stay. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 55,
+                                "charge": "P",
+                                "value": 0
+                            },
+                            {
+                                "days": 54,
+                                "charge": "P",
+                                "value": 15
+                            },
+                            {
+                                "days": 3,
+                                "charge": "P",
+                                "value": 100
+                            },
+                            {
+                                "days": 0,
+                                "charge": "P",
+                                "value": 100
+                            }
+                        ],
+                        "date": [
+                            {
+                                "before": "2024-08-30T00:00:00",
+                                "rate": {
+                                    "exclusive": 0.00,
+                                    "inclusive": 0.00,
+                                    "tax": 0.00,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "before": "2024-10-20T00:00:00",
+                                "rate": {
+                                    "exclusive": 634.34,
+                                    "inclusive": 719.22,
+                                    "tax": 84.87,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "before": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 4228.96,
+                                    "inclusive": 4794.78,
+                                    "tax": 565.82,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "onward": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 4228.96,
+                                    "inclusive": 4794.78,
+                                    "tax": 565.82,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": [
+                        {
+                            "id": 1,
+                            "benefitName": "Breakfast",
+                            "translatedBenefitName": "Breakfast"
+                        }
+                    ]
+                },
+                {
+                    "roomId": 370641526,
+                    "blockId": "Mjc4ODc5NmQtNTYxNS02ODZkLWY2MWMtMzEwNDVjYTYzNTdmOjMzMg==",
+                    "roomName": "The Venetian Prestige Club Lounge Luxury King Suite",
+                    "parentRoomName": "The Venetian Prestige Club Lounge Luxury King Suite",
+                    "translatedRoomName": "The Venetian Prestige Club Lounge Luxury King Suite",
+                    "blockIdBackup": "2788796d-5615-686d-f61c-31045ca6357f",
+                    "parentRoomId": 370641526,
+                    "ratePlanId": 1627475,
+                    "freeWifi": false,
+                    "remainingRooms": 105,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": false,
+                    "freeCancellation": false,
+                    "totalPayment": {
+                        "exclusive": 4566.86,
+                        "inclusive": 5177.9,
+                        "tax": 611.04,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 913.37,
+                        "inclusive": 1035.58,
+                        "tax": 122.21,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 913.37,
+                        "inclusive": 1035.58,
+                        "tax": 122.21,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 487.14,
+                            "inclusive": 552.31,
+                            "tax": 65.17,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 582.70,
+                            "inclusive": 660.67,
+                            "tax": 77.97,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 869.41,
+                            "inclusive": 985.74,
+                            "tax": 116.33,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 907.64,
+                            "inclusive": 1029.08,
+                            "tax": 121.44,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 1719.97,
+                            "inclusive": 1950.10,
+                            "tax": 230.13,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 23.05
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 115.23
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "365D100P_100P",
+                        "cancellationText": "This booking is Non-Refundable and cannot be amended or modified. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "translatedCancellationText": "This booking is Non-Refundable and cannot be amended or modified. Failure to arrive at your hotel or property will be treated as a No-Show and will incur a charge of 100% of the booking value (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 365,
+                                "charge": "P",
+                                "value": 100
+                            }
+                        ],
+                        "date": [
+                            {
+                                "onward": "2024-08-24T00:00:00",
+                                "rate": {
+                                    "exclusive": 4566.86,
+                                    "inclusive": 5177.90,
+                                    "tax": 611.04,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": [
+                        {
+                            "id": 95,
+                            "benefitName": "Free WiFi",
+                            "translatedBenefitName": "Free WiFi"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+
+
+this is our availability information about rooms for specific hotel ids we provided
+
+
+also we need hotel information for our frontend so we have to get information from our database toolbar, this called get_hotel_data_from_db
+
+
+so get_hotel_data_from_db is just one query like this
+
+SELECT
+    h.hotel_id,
+    h.hotel_name,
+    h.star_rating,
+    (SELECT url FROM public.pictures p WHERE p.hotel_id = h.hotel_id AND p.caption = 'Exterior view' LIMIT 1) AS image_url,
+    (SELECT address_line_1 FROM public.addresses a WHERE a.hotel_id = h.hotel_id LIMIT 1) AS address,
+    (SELECT overview FROM public.hotel_descriptions d WHERE d.hotel_id = h.hotel_id LIMIT 1) AS description
+FROM
+    public.hotels h
+WHERE
+    h.hotel_id IN (147265, 2937, 105040, 105262)
+LIMIT 20;
+
+
+which return all important information for frontend, I will write down all information we need for first page where we list all hotels after user click search and what information we need for hotels detailed page where user make room reservations
+for now we are prototyping hotel search page with minimal hotel information
+
+here is it in text format
+
+For First Page Load
+1. Hotel Name
+2. Hotel Image Main
+3. Stars
+4. Address
+5. Description
+6. Cheapsest price what returned
+7. Cashback
+8. Benefits 
+9. Free cancelation and Breakfast
+
+also important we have to keep search result in our database.
+we can even use postgresql query to get json response if its better somehow for us 
+SELECT json_agg(
+    json_build_object(
+        'hotel_id', h.hotel_id,
+        'hotel_name', h.hotel_name,
+        'star_rating', h.star_rating,
+        'image_url', (SELECT url FROM public.pictures p WHERE p.hotel_id = h.hotel_id AND p.caption = 'Exterior view' LIMIT 1),
+        'address', (SELECT address_line_1 FROM public.addresses a WHERE a.hotel_id = h.hotel_id LIMIT 1),
+        'description', (SELECT overview FROM public.hotel_descriptions d WHERE d.hotel_id = h.hotel_id LIMIT 1)
+    )
+) AS hotels
+FROM public.hotels h
+WHERE h.hotel_id IN (147265, 2937, 105040, 105262)
+LIMIT 20;
+
+this query will return data in this format:
+
+
+
+[
+  {
+    "hotel_id": 147265,
+    "hotel_name": "South Point Hotel Casino and Spa",
+    "star_rating": 4,
+    "image_url": "https://pix8.agoda.net/hotelImages/147265/-1/0677c66c5855751296738cb3c9254cc0.jpg?ca=9&ce=1&s=312x",
+    "address": "9777 Las Vegas Boulevard South",
+    "description": ""
+  },
+  {
+    "hotel_id": 105262,
+    "hotel_name": "Library Hotel",
+    "star_rating": 4,
+    "image_url": "https://pix8.agoda.net/hotelImages/105/105262/105262_16101823390047891860.jpg?ca=6&ce=1&s=312x",
+    "address": "299 Madison Avenue at 41st Street",
+    "description": "Great care is taken to ensure guests experience comfort through top-notch services and amenities. Remain linked during your visit by utilizing the complimentary internet access available.Prior to your check-in date, you can arrange airport transportation services, guaranteeing a seamless and efficient experience for both arrival and departure. Parking is accessible, supplied by the hotel for guests who arrive by car.The hotel is completely smoke-free. Each morning at Library Hotel, a scrumptious, homemade breakfast kick-starts the day. During your visit, indulge in a range of delightful culinary choices at hotel to enhance your experience.Indulge in the numerous pursuits available at Library Hotel. Eliminate those holiday calories by stopping by hotel and making use of their well-equipped exercise amenities."
+  },
+  {
+    "hotel_id": 105040,
+    "hotel_name": "Hotel Elysee",
+    "star_rating": 4,
+    "image_url": "https://pix8.agoda.net/hotelImages/105/105040/105040_15123003370038795544.jpg?ca=6&ce=1&s=312x",
+    "address": "60 East 54th Street",
+    "description": "At Hotel Elysee, exceptional service and top-notch amenities create a memorable experience for guests. Complimentary internet access is available in the hotel to ensure you stay connected during your visit.For guests with their own vehicle, parking facilities are provided. Due to health concerns, smoking is strictly prohibited within the entire premises of hotel. A delightful breakfast is the perfect way to begin your day, and at Hotel Elysee, you can always indulge in a scrumptious meal on-site. Allow your journey to be free from the pangs of hunger! On-site eateries offer delicious and accessible meal choices."
+  },
+  {
+    "hotel_id": 2937,
+    "hotel_name": "The Venetian Resort",
+    "star_rating": 5,
+    "image_url": "https://q-xx.bstatic.com/xdata/images/hotel/max500/115325234.jpg?k=d2c43e45f17a7465167886a6ceffb828b167d98f8a5ffd0417d64836a7411175&o=&s=312x",
+    "address": "3355 Las Vegas Boulevard South",
+    "description": "Great care is taken to ensure guests experience comfort through top-notch services and amenities. Remain linked during your visit by utilizing the complimentary internet access available.Parking is accessible, supplied by the resort for guests who arrive by car. In limited designated zones, smoking is exclusively permitted.Crafted for coziness, every guestroom provides an array of features, guaranteeing a tranquil night's sleep while maintaining the level of comfort. Chosen accommodation prices might include entry to the executive lounge, offering premium services amid an ambiance of refined extravagance. Each morning at The Venetian Resort, a scrumptious, homemade breakfast kick-starts the day. Begin your holiday mornings right with your essential cup of coffee, offered daily at the cafe on-site.During your visit, indulge in a range of delightful culinary choices at resort to enhance your experience.Indulge in the numerous pursuits available at The Venetian Resort. Begin your holiday perfectly by taking a plunge into the swimming pool.At the resort, enjoy a laid-back beverage experience by the poolside bar, sipping on a soothing cocktail. Eliminate those holiday calories by stopping by resort and making use of their well-equipped exercise amenities."
+  }
+]
+
+
+
+ok so we got information from both sources now we need function to combine this all data and and send response back to the front in this format
+
+[
+    {
+        "hotel_id": 147265,
+        "hotel_name": "South Point Hotel Casino and Spa",
+        "star_rating": 4,
+        "image_url": "https://pix8.agoda.net/hotelImages/147265/-1/0677c66c5855751296738cb3c9254cc0.jpg",
+        "address": "9777 Las Vegas Boulevard South",
+        "description": "Hotel description here",
+        "cheapest_price": 3319.03,
+        "benefits": ["Free WiFi"],
+        "free_cancellation": true,
+        "free_breakfast": false
+    },
+    {
+        "hotel_id": 2937,
+        "hotel_name": "The Venetian Resort",
+        "star_rating": 5,
+        "image_url": "https://example.com/venetian.jpg",
+        "address": "3355 Las Vegas Boulevard South",
+        "description": "Venetian resort description",
+        "cheapest_price": 3032.15,
+        "benefits": ["Free WiFi", "Breakfast"],
+        "free_cancellation": true,
+        "free_breakfast": true
+    }
+]
+
+
+this is all information frontend need for first page of search where we list 20 hotels each page
+
+
+
+
+
+here is a python code which I had in my mind to understand it easily
+
+import asyncio
+from typing import List, Dict
+
+async def get_hotel_data_from_db(hotel_ids: List[int]) -> List[Dict]:
+    # Function that queries PostgreSQL for hotel data (image, stars, address, description, hotel name)
+    query = """
+    SELECT
+        h.hotel_id,
+        h.hotel_name,
+        h.star_rating,
+        (SELECT url FROM public.pictures p WHERE p.hotel_id = h.hotel_id AND p.caption = 'Exterior view' LIMIT 1) AS image_url,
+        (SELECT address_line_1 FROM public.addresses a WHERE a.hotel_id = h.hotel_id LIMIT 1) AS address,
+        (SELECT overview FROM public.hotel_descriptions d WHERE d.hotel_id = h.hotel_id LIMIT 1) AS description
+    FROM
+        public.hotels h
+    WHERE
+        h.hotel_id = ANY(:hotel_ids)
+    """
+    # Fetch data from database using async execution
+    # Example database query execution
+    result = await db_session.execute(query, {'hotel_ids': hotel_ids})
+    return [dict(row) for row in result.fetchall()]
+
+async def fetch_availability_from_api(hotel_ids: List[int]) -> Dict:
+    # Function that fetches availability data from Agoda API for the given hotel IDs
+    response = await fetch_availability_api(hotel_ids)  # Assume this is implemented
+    return response
+
+async def combine_hotel_and_api_data(hotel_ids: List[int]) -> List[Dict]:
+    # Fetch data from the database
+    db_data = await get_hotel_data_from_db(hotel_ids)
+    
+    # Fetch data from the API
+    api_data = await fetch_availability_from_api(hotel_ids)
+    
+    # Combine the results into a single response
+    combined_results = []
+    
+    for hotel in db_data:
+        hotel_id = hotel['hotel_id']
+        
+        # Find the corresponding data from the API response
+        api_hotel = next((h for h in api_data['properties'] if str(h['propertyId']) == str(hotel_id)), None)
+        
+        if api_hotel:
+            # Extract the cheapest price from the available rooms
+            cheapest_price = min(
+                (room['totalPayment']['inclusive'] for room in api_hotel['rooms']),
+                default=None
+            )
+            
+            # Extract benefits
+            benefits = [benefit['translatedBenefitName'] for room in api_hotel['rooms'] for benefit in room.get('benefits', [])]
+            
+            # Extract free cancellation and breakfast
+            free_cancellation = any(room['freeCancellation'] for room in api_hotel['rooms'])
+            free_breakfast = any(room['freeBreakfast'] for room in api_hotel['rooms'])
+            
+            # Add the API-specific data to the hotel record
+            hotel.update({
+                'cheapest_price': cheapest_price,
+                'benefits': benefits,
+                'free_cancellation': free_cancellation,
+                'free_breakfast': free_breakfast
+            })
+        
+        # Add the combined hotel data to the result list
+        combined_results.append(hotel)
+    
+    return combined_results
+
+# Example use:
+async def get_combined_hotel_data(hotel_ids: List[int]):
+    combined_data = await combine_hotel_and_api_data(hotel_ids)
+    return combined_data
+
+
+maybe its not correct but anyways you can have an idea what Im talking about 
+
+on the other hand we have to put search result into the database, I created table called search_result with this query
+
+CREATE TABLE search_results (
+    search_id VARCHAR PRIMARY KEY,
+    response_data JSONB
+);
+
+
+
+with query like this we will put search results in database
+
+INSERT INTO search_results (search_id, response_data)
+VALUES 
+(
+    '1643212383886940000', 
+    '{
+        "searchId": 1643212383886940000,
+        "properties": [
+            {
+                "propertyId": 2937,
+                "propertyName": "The Venetian Resort",
+                "translatedPropertyName": "The Venetian Resort",
+                "propertyUtcOffset": "-07:00",
+                "rooms": [
+                    {
+                        "roomId": 3028175,
+                        "blockId": "MDhkZjY2ZTItMDc3Mi0yYjE4LTUyYTQtMTBkODZiYmIzN2QxOjMzMg==",
+                        "roomName": "Luxury King Suite City View",
+                        "parentRoomName": "Luxury King Suite City View",
+                        "translatedRoomName": "Luxury King Suite City View",
+                        "blockIdBackup": "08df66e2-0772-2b18-52a4-10d86bbb37d1",
+                        "parentRoomId": 3028175,
+                        "ratePlanId": 11969931,
+                        "freeWifi": false,
+                        "remainingRooms": 150,
+                        "normalBedding": 4,
+                        "extraBeds": 0,
+                        "freeBreakfast": false,
+                        "freeCancellation": true,
+                        "totalPayment": {
+                            "exclusive": 2927.35,
+                            "inclusive": 3319.03,
+                            "tax": 391.68,
+                            "fees": 0.00,
+                            "taxDueSupplier": 0,
+                            "estimatedCommission": 0.00
+                        },
+                        "roomTypeNotGuaranteed": false,
+                        "paymentModel": "Merchant",
+                        "rate": {
+                            "currency": "USD",
+                            "exclusive": 585.47,
+                            "inclusive": 663.81,
+                            "tax": 78.34,
+                            "fees": 0.00,
+                            "method": "PRPN"
+                        },
+                        "perRoomPerNightRate": {
+                            "currency": "USD",
+                            "exclusive": 585.47,
+                            "inclusive": 663.81,
+                            "tax": 78.34,
+                            "fees": 0.00
+                        },
+                        "dailyRate": [
+                            {
+                                "date": "2024-10-23",
+                                "exclusive": 241.19,
+                                "inclusive": 273.46,
+                                "tax": 32.27,
+                                "fees": 0.00,
+                                "method": "PN"
+                            },
+                            {
+                                "date": "2024-10-24",
+                                "exclusive": 320.32,
+                                "inclusive": 363.17,
+                                "tax": 42.85,
+                                "fees": 0.00,
+                                "method": "PN"
+                            },
+                            {
+                                "date": "2024-10-25",
+                                "exclusive": 507.34,
+                                "inclusive": 575.23,
+                                "tax": 67.89,
+                                "fees": 0.00,
+                                "method": "PN"
+                            },
+                            {
+                                "date": "2024-10-26",
+                                "exclusive": 528.93,
+                                "inclusive": 599.70,
+                                "tax": 70.77,
+                                "fees": 0.00,
+                                "method": "PN"
+                            },
+                            {
+                                "date": "2024-10-27",
+                                "exclusive": 1329.57,
+                                "inclusive": 1507.47,
+                                "tax": 177.90,
+                                "fees": 0.00,
+                                "method": "PN"
+                            }
+                        ],
+                        "promotionDetail": {
+                            "promotionId": -1,
+                            "codeEligible": false,
+                            "description": "",
+                            "typeDescription": "Limited Time Offer.",
+                            "savingAmount": 174.99,
+                            "promotionTypeId": 4078
+                        },
+                        "surcharges": [
+                            {
+                                "id": 272,
+                                "method": "PB",
+                                "charge": "Excluded",
+                                "margin": "n",
+                                "name": "Resort Fee",
+                                "rate": {
+                                    "currency": "USD",
+                                    "exclusive": 283.45,
+                                    "inclusive": 283.45,
+                                    "tax": 0.00,
+                                    "fees": 0.00
+                                }
+                            }
+                        ],
+                        "taxBreakdown": [
+                            {
+                                "id": "56",
+                                "typeValue": "Tax",
+                                "taxDescription": "Accommodation Tax",
+                                "translatedTaxDescription": "Accommodation Tax",
+                                "method": "PRPN",
+                                "currency": "USD",
+                                "base": "N",
+                                "taxable": "N",
+                                "percent": 0.88,
+                                "amount": 12.72
+                            },
+                            {
+                                "id": "56",
+                                "typeValue": "Tax",
+                                "taxDescription": "Accommodation Tax",
+                                "translatedTaxDescription": "Accommodation Tax",
+                                "method": "PRPN",
+                                "currency": "USD",
+                                "base": "N",
+                                "taxable": "N",
+                                "percent": 12.5,
+                                "amount": 73.72
+                            },
+                            {
+                                "id": "2",
+                                "typeValue": "Fee",
+                                "taxDescription": "Fee",
+                                "translatedTaxDescription": "Fee",
+                                "method": "PB",
+                                "currency": "USD",
+                                "base": "N",
+                                "taxable": "N",
+                                "percent": 0,
+                                "amount": 0
+                            }
+                        ],
+                        "cancellationPolicy": {
+                            "code": "3D1N_1N",
+                            "cancellationText": "Risk-free booking! Cancel before 2024-10-20 and you''ll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night''s charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night''s charge (Hotel policy).",
+                            "translatedCancellationText": "Risk-free booking! Cancel before 2024-10-20 and you''ll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night''s charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night''s charge (Hotel policy).",
+                            "parameter": [
+                                {
+                                    "days": 4,
+                                    "charge": "N",
+                                    "value": 0
+                                },
+                                {
+                                    "days": 3,
+                                    "charge": "N",
+                                    "value": 1
+                                },
+                                {
+                                    "days": 0,
+                                    "charge": "N",
+                                    "value": 1
+                                }
+                            ],
+                            "date": [
+                                {
+                                    "before": "2024-10-20T00:00:00",
+                                    "rate": {
+                                        "exclusive": 0.00,
+                                        "inclusive": 0.00,
+                                        "tax": 0.00,
+                                        "fees": 0.00
+                                    }
+                                },
+                                {
+                                    "before": "2024-10-23T00:00:00",
+                                    "rate": {
+                                        "exclusive": 241.19,
+                                        "inclusive": 273.46,
+                                        "tax": 32.27,
+                                        "fees": 0.00
+                                    }
+                                },
+                                {
+                                    "onward": "2024-10-23T00:00:00",
+                                    "rate": {
+                                        "exclusive": 241.19,
+                                        "inclusive": 273.46,
+                                        "tax": 32.27,
+                                        "fees": 0.00
+                                    }
+                                }
+                            ]
+                        },
+                        "benefits": [
+                            {
+                                "id": 95,
+                                "benefitName": "Free WiFi",
+                                "translatedBenefitName": "Free WiFi"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }'::jsonb
+);
+
+
+
+we use it in the next part for detailed search 
+
+
+
+so we need to have two endpoints, endpoint `api/hotels` to get a list of hotels for specific city in that dates what are requested, etc. and second `api/details` where frontend passes just hotel idand search_id to get detailed full information about hotel, lets call it hotel page
+
+
+lets to to hotels detailed page, what we need here is 
+
+Hotel Detailed Information
+1. Hotel Name
+select hotel_name from public.hotels where hotel_id = 147265
+2. Hotel Address
+PostgreSQL - 
+SELECT address_line_1 
+FROM public.addresses 
+WHERE hotel_id = 147265;
+3. Hotel All Images
+hotel images are groupd by captions
+
+
+get hotel all images group by captioned in json format with query:
+
+````
+SELECT json_object_agg(
+    caption, urls
+) AS grouped_pictures
+FROM (
+    SELECT caption, json_agg(url) AS urls
+    FROM public.pictures
+    WHERE hotel_id = 147265
+    GROUP BY caption
+) AS subquery;
+````
+
+
+output:
+
+{
+  "Bed"; [
+    "https://pix8.agoda.net/hotelImages/147265/-1/5709a9756e24261be17a0e38b0f6c91c.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/0738b266804dedaae43d26bf3e1b54aa.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/5709a9756e24261be17a0e38b0f6c91c.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/0738b266804dedaae43d26bf3e1b54aa.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/5709a9756e24261be17a0e38b0f6c91c.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/0738b266804dedaae43d26bf3e1b54aa.jpg?ca=13&ce=1&s=312x"
+  ],
+  "Recreational facilities"; [
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463781.jpg?ca=5&ce=1&s=312x"
+  ]
+}
+
+
+get unique names of captios with query
+
+
+```
+SELECT json_agg(DISTINCT caption) 
+FROM public.pictures;
+```
+
+output
+````
+[
+  "",
+  "Amenity (Guest room)",
+  "Attractions",
+  "Balcony/terrace",
+  "Ballroom",
+]
+```
+
+4. All Amenites
+We have an amenity categories, in api its called facilities not amenities so each facility has property_group_descriptions which are groups and used to group facilities. here are a list of groups
+
+{
+  "property_group_descriptions": [
+    "Access",
+    "Accessibility",
+    "Services and conveniences",
+    "Sports equipment rental",
+    "Swimming & soaking",
+    "Things to do, ways to relax"
+  ]
+}
+
+To get all facilities groupd by property_group_descriptions in json format you can execute sql query
+
+```
+SELECT json_agg(
+         json_build_object(
+             'property_group_description', property_group_description,
+             'facilities', facilities
+         )
+       ) AS grouped_facilities
+FROM (
+    SELECT property_group_description, array_agg(property_name) AS facilities
+    FROM public.facilities
+    WHERE hotel_id = 2937
+    GROUP BY property_group_description
+) subquery;
+```
+
+5. Hotel's available rooms detailed information from db (pictures, etc)
+SELECT * 
+FROM public.room_types 
+WHERE hotel_id = 2937 
+AND hotel_room_type_id = 3028166;
+
+
+6. Map longitude and latitude information
+SELECT longitude, latitude 
+FROM public.hotels 
+WHERE hotel_id = 2937;
+
+
+actually the whole data is divided into two part:
+
+
+1. we can make one query in db which give us all information in json except one data
+WITH hotel_details AS (
+    SELECT 
+        h.hotel_name,
+        a.address_line_1,
+        h.longitude, 
+        h.latitude
+    FROM 
+        public.hotels h
+    JOIN 
+        public.addresses a ON h.hotel_id = a.hotel_id
+    WHERE 
+        h.hotel_id = 4521
+    LIMIT 1
+),
+grouped_pictures AS (
+    SELECT 
+        json_object_agg(caption, urls) AS images
+    FROM (
+        SELECT 
+            caption, 
+            json_agg(url) AS urls
+        FROM 
+            public.pictures
+        WHERE 
+            hotel_id = 4521
+        GROUP BY 
+            caption
+    ) AS subquery
+),
+grouped_facilities AS (
+    SELECT 
+        json_agg(
+            json_build_object(
+                'property_group_description', property_group_description,
+                'facilities', facilities
+            )
+        ) AS grouped_facilities
+    FROM (
+        SELECT 
+            property_group_description, 
+            array_agg(property_name) AS facilities
+        FROM 
+            public.facilities
+        WHERE 
+            hotel_id = 4521
+        GROUP BY 
+            property_group_description
+    ) subquery
+)
+
+SELECT json_build_object(
+    'hotel_name', hd.hotel_name,
+    'address_line_1', hd.address_line_1,
+    'longitude', hd.longitude,
+    'latitude', hd.latitude,
+    'images', gp.images,
+    'facilities', gf.grouped_facilities
+) AS hotel_data
+FROM 
+    hotel_details hd,
+    grouped_pictures gp,
+    grouped_facilities gf;
+
+
+    with this query we get output like this:
+
+{"hotel_name" : "The Athens Gate Hotel", "address_line_1" : "10, Sygrou Avenue", "longitude" : 23.73154640197754, "latitude" : 37.96859359741211, "images" : { "Lobby" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/47370604.jpg?k=d6d5a50c4e2b201276f5382d560d95b42c1b4076e7e6831d1f27a69eca7a69e3&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/47370604.jpg?k=d6d5a50c4e2b201276f5382d560d95b42c1b4076e7e6831d1f27a69eca7a69e3&o=&s=312x"], "Facilities" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/13880984.jpg?k=4288aa28774b6dc5d9cfc57c6ae49fd992931ba7524a0b76f1f942fed2bc8ede&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/13880984.jpg?k=4288aa28774b6dc5d9cfc57c6ae49fd992931ba7524a0b76f1f942fed2bc8ede&o=&s=312x"], "" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/47364937.jpg?k=a6129e55e92af22fc700bd62cd46968b65379f875889ac814c3bf74701babfd1&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550653643.jpg?k=f377b53d5fc98ceb086c0bbb41f209a32397f08e800c948dd124dfee0b95783a&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550653789.jpg?k=5cce2db91fcd8934b1a27623ebfea92defdd6a099750fdf5264c660fbed490b6&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/47364937.jpg?k=a6129e55e92af22fc700bd62cd46968b65379f875889ac814c3bf74701babfd1&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550653643.jpg?k=f377b53d5fc98ceb086c0bbb41f209a32397f08e800c948dd124dfee0b95783a&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550653789.jpg?k=5cce2db91fcd8934b1a27623ebfea92defdd6a099750fdf5264c660fbed490b6&o=&s=312x"], "Balcony/terrace" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/550654778.jpg?k=6ca01e2b93daa077bb575f3ade05eeb4b86ff4fae5e7917b63bfbc90b03263fa&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550631985.jpg?k=4e5416223cbc7bf2739a74e6482ed4bd3c8bd9c3cedc305842003f4dde7894da&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550654778.jpg?k=6ca01e2b93daa077bb575f3ade05eeb4b86ff4fae5e7917b63bfbc90b03263fa&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550631985.jpg?k=4e5416223cbc7bf2739a74e6482ed4bd3c8bd9c3cedc305842003f4dde7894da&o=&s=312x"], "Exterior view" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/47362777.jpg?k=7a64836fb152c3e8e8ee2444f3fd3c0a7e5d6af4f22b8ff633733846c66b0a36&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/47362781.jpg?k=08d115079b0c718978e6604751b322e4bb776bdf2207cfc19f4fd6a374a0cbac&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/47362777.jpg?k=7a64836fb152c3e8e8ee2444f3fd3c0a7e5d6af4f22b8ff633733846c66b0a36&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/47362781.jpg?k=08d115079b0c718978e6604751b322e4bb776bdf2207cfc19f4fd6a374a0cbac&o=&s=312x"], "Restaurant" : ["https://pix8.agoda.net/hotelImages/452/4521/4521_15071020090032078971.jpg?ca=4&ce=1&s=312x", "https://pix8.agoda.net/hotelImages/452/4521/4521_15071020090032078971.jpg?ca=4&ce=1&s=312x"], "Surrounding environment" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/47362869.jpg?k=35c6ce4383211b2b72ba94d3815aea9d734d4a7725cc8bf059e0b4c2fea5b285&o=&s=312x", "https://pix8.agoda.net/hotelImages/6798001/0/c968ba0d3e03c95e512922f1f874cb1d.jpg?ca=23&ce=0&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550631777.jpg?k=0b699c2d1d237908613c455d55c7c12a8b289797767e38834c9a9deaac87714d&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/47362869.jpg?k=35c6ce4383211b2b72ba94d3815aea9d734d4a7725cc8bf059e0b4c2fea5b285&o=&s=312x", "https://pix8.agoda.net/hotelImages/6798001/0/c968ba0d3e03c95e512922f1f874cb1d.jpg?ca=23&ce=0&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550631777.jpg?k=0b699c2d1d237908613c455d55c7c12a8b289797767e38834c9a9deaac87714d&o=&s=312x"], "Recreational facilities" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/47370560.jpg?k=5392dd28ca60477eb9cbb6af8df552d607dd51197475f9f51ae886de5ee4395e&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/47370560.jpg?k=5392dd28ca60477eb9cbb6af8df552d607dd51197475f9f51ae886de5ee4395e&o=&s=312x"], "Food and beverages" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/47364177.jpg?k=71bb4c6c8f7e587c7c4608a1be314bd5fa87f1f1001772160b1bb4a7db42a9bb&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550629034.jpg?k=678b820089f2f8cb43b1e52a8affb950ab82df1ce39557191f9e16b6aff94692&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550629042.jpg?k=0d272e97d4328f72027e087c038556794c57395f1b03ff5216142394f7fd55ca&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550629043.jpg?k=880284b7d2367365fb47847302c636cc610941f4f4bd1224a42b8766db58c1b3&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/47364177.jpg?k=71bb4c6c8f7e587c7c4608a1be314bd5fa87f1f1001772160b1bb4a7db42a9bb&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550629034.jpg?k=678b820089f2f8cb43b1e52a8affb950ab82df1ce39557191f9e16b6aff94692&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550629042.jpg?k=0d272e97d4328f72027e087c038556794c57395f1b03ff5216142394f7fd55ca&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/550629043.jpg?k=880284b7d2367365fb47847302c636cc610941f4f4bd1224a42b8766db58c1b3&o=&s=312x"], "View" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/440921428.jpg?k=ddd2f33c97745593f628975358986580c3af33d76812676298c1e999850b81fb&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/440921428.jpg?k=ddd2f33c97745593f628975358986580c3af33d76812676298c1e999850b81fb&o=&s=312x"], "Entrance" : ["https://q-xx.bstatic.com/xdata/images/hotel/max500/47362938.jpg?k=0e135693e5949b2b7a6879c0fbb6a849f3edad8bdccb89939385bc5f2b238354&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/5510049.jpg?k=b0442ac8454393bc932d69480333b9adfa0b10d44163018e1507a62aa81f3ebe&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/5510060.jpg?k=cf102c50602108b51a11076d9c8656c0ee80fe2179f0efaf5bbb4a7acb1e1aac&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/5510092.jpg?k=3af75ec1352802ee2d9e50e29dd5dae857c5dfc4ed982158665f0ecb8b89b747&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/47362938.jpg?k=0e135693e5949b2b7a6879c0fbb6a849f3edad8bdccb89939385bc5f2b238354&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/5510049.jpg?k=b0442ac8454393bc932d69480333b9adfa0b10d44163018e1507a62aa81f3ebe&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/5510060.jpg?k=cf102c50602108b51a11076d9c8656c0ee80fe2179f0efaf5bbb4a7acb1e1aac&o=&s=312x", "https://q-xx.bstatic.com/xdata/images/hotel/max500/5510092.jpg?k=3af75ec1352802ee2d9e50e29dd5dae857c5dfc4ed982158665f0ecb8b89b747&o=&s=312x"] }, "facilities" : [{"property_group_description" : "Cleanliness and safety", "facilities" : ["Anti-viral cleaning products","Body thermometer","Breakfast in room","Breakfast takeaway service","Cashless payment service","Daily disinfection in all rooms","Daily disinfection in common areas","Doctor/nurse on call","Face coverings on staff","First aid kit","Free face masks","Guest rooms seal after sanitization","Hand sanitizer","Hot water linen and laundry washing","Hygiene certification","Individually-wrapped food options","Physical distancing of at least 1 meter","Protective screens in common areas","Room sanitization opt-out available","Rooms sanitized between stays","Safe dining setup","Sanitized kitchen and tableware items","Shared stationery removed","Staff trained in safety protocol","Sterilizing equipment","Temperature check for guests and staff"]}, {"property_group_description" : "Dining, drinking, and snacking", "facilities" : ["Alternative meal arrangement","Bar","Breakfast [buffet]","Breakfast [continental]","","Restaurants","Room service",""]}, {"property_group_description" : "Services and conveniences", "facilities" : ["Air conditioning in public area","Concierge","Contactless check-in/out","Daily housekeeping","Dry cleaning","Elevator","Fireplace","Food delivery","Grooming service","Heating in public area","Invoice provided","Ironing service","Laundry service","Library","Luggage storage","Meeting/banquet facilities","Postal service","Safety deposit boxes","Shared lounge/TV area","Smoke-free property","Smoking area","Terrace","Xerox/fax in business center"]}, {"property_group_description" : "For the kids", "facilities" : ["Babysitting service","Family room","Kids meal"]}, {"property_group_description" : "Getting around", "facilities" : ["Car park [charges apply]","Car park [on-site]","Rental car "]}, {"property_group_description" : "Access", "facilities" : ["Cat-friendly","CCTV in common areas","CCTV outside property","Check-in/out [express]","Check-in/out [private]","Check-in [24-hour]","Dog-friendly","Fire extinguisher","Front desk [24-hour]","Non-smoking rooms","Pets allowed","Pets allowed for free","Security [24-hour]","Smoke alarms","Soundproof rooms"]}, {"property_group_description" : "Internet access", "facilities" : ["Free Wi-Fi in all rooms!","Internet","Internet services","Wi-Fi in public areas"]}, {"property_group_description" : "Available in all rooms", "facilities" : ["Air conditioning","Alarm clock","","Balcony/terrace","Blackout curtains","Closet","Clothes rack","Coffee/tea maker","Daily housekeeping","Desk","Hair dryer","Hand sanitizer","Heating","In-room safe box","Internet access – wireless","Ironing facilities","LAN Internet in room [free]","Laptop safe box","Linens","Mini bar","Non-smoking","Private bathroom","Safety/security feature","Satellite/cable channels","Shower","Sleep comfort items","Slippers","Smoke detector","Socket near the bed","Soundproofing","Telephone","Toiletries","Towels","Trash cans","Wake-up service","Wi-Fi [free]","Wooden/parqueted flooring"]}, {"property_group_description" : "Languages spoken", "facilities" : ["English","Dutch","French","German","Greek"]}, {"property_group_description" : "Things to do, ways to relax", "facilities" : ["Massage","Ticket services","Tours"]}]}
+
+here is everything except available rooms data. to get that information we have to go with pythin on search_results table, get json and loop to get all roomId values, make an arry and make another information to get room_types
+
+
+SELECT json_agg(row_to_json(rt))
+FROM (
+    SELECT * 
+    FROM public.room_types 
+    WHERE hotel_id = 2937 
+    AND hotel_room_type_id IN (3028175, 3028166, 752835270)  -- Replace with your list of room IDs
+) rt;
+
+
+here is query which will be used to get all room type informations for hotel
+
+respons is this:
+
+[
+    {
+        "id": 84243,
+        "hotel_id": 2937,
+        "hotel_room_type_id": 3028166,
+        "standard_caption": "Luxury Two Queen Suite City View",
+        "standard_caption_translated": "Luxury Two Queen Suite City View",
+        "max_occupancy_per_room": 4,
+        "no_of_room": 999,
+        "size_of_room": 65.03,
+        "room_size_incl_terrace": false,
+        "views": "City view",
+        "max_extrabeds": 0,
+        "max_infant_in_room": 0,
+        "hotel_room_type_picture": "https://q-xx.bstatic.com/xdata/images/hotel/max500/115324498.jpg?k=d8edabfab172f78b1b2005a8dceabb37cb9da7c915f8f0d6b2b0008978b4381e&o=&s=312x",
+        "bed_type": "2 queen beds",
+        "hotel_master_room_type_id": 0,
+        "hotel_room_type_alternate_name": "",
+        "shared_bathroom": false,
+        "smoking_nonsmoking": "NonSmoking",
+        "gender": ""
+    },
+    {
+        "id": 85841,
+        "hotel_id": 2937,
+        "hotel_room_type_id": 752835270,
+        "standard_caption": "Venetian Luxury Sphere View King Suite",
+        "standard_caption_translated": "Venetian Luxury Sphere View King Suite",
+        "max_occupancy_per_room": 4,
+        "no_of_room": 1,
+        "size_of_room": 650,
+        "room_size_incl_terrace": false,
+        "views": "Mountain view",
+        "max_extrabeds": 0,
+        "max_infant_in_room": 0,
+        "hotel_room_type_picture": "https://pix8.agoda.net/hotelImages/2937/752835270/8779902bddd4d0af6efe45a85c30f0f1.jpg?ce=0&s=312x",
+        "bed_type": "1 king bed or 1 double bed",
+        "hotel_master_room_type_id": 0,
+        "hotel_room_type_alternate_name": "",
+        "shared_bathroom": false,
+        "smoking_nonsmoking": "NonSmoking",
+        "gender": ""
+    },
+    {
+        "id": 84799,
+        "hotel_id": 2937,
+        "hotel_room_type_id": 3028175,
+        "standard_caption": "Luxury King Suite City View",
+        "standard_caption_translated": "Luxury King Suite City View",
+        "max_occupancy_per_room": 4,
+        "no_of_room": 999,
+        "size_of_room": 60.38,
+        "room_size_incl_terrace": false,
+        "views": "City view",
+        "max_extrabeds": 0,
+        "max_infant_in_room": 0,
+        "hotel_room_type_picture": "https://q-xx.bstatic.com/xdata/images/hotel/max500/556091313.jpg?k=af35813ed9b4fde79c6af4a95fe966fdb9ad7e0550876a28d663eabe7d729c95&o=&s=312x",
+        "bed_type": "1 king bed",
+        "hotel_master_room_type_id": 0,
+        "hotel_room_type_alternate_name": "",
+        "shared_bathroom": false,
+        "smoking_nonsmoking": "NonSmoking",
+        "gender": ""
+    }
+]
+
+
+to make it final response we haeve to add room type prices and other details for each room type. we have to go our response 's whole "rooms" element of json and combine it with our data as 
+
+                {
+                    "roomId": 3028175,
+                    "blockId": "MDhkZjY2ZTItMDc3Mi0yYjE4LTUyYTQtMTBkODZiYmIzN2QxOjMzMg==",
+                    "roomName": "Luxury King Suite City View",
+                    "parentRoomName": "Luxury King Suite City View",
+                    "translatedRoomName": "Luxury King Suite City View",
+                    "blockIdBackup": "08df66e2-0772-2b18-52a4-10d86bbb37d1",
+                    "parentRoomId": 3028175,
+                    "ratePlanId": 11969931,
+                    "freeWifi": false,
+                    "remainingRooms": 150,
+                    "normalBedding": 4,
+                    "extraBeds": 0,
+                    "freeBreakfast": false,
+                    "freeCancellation": true,
+                    "totalPayment": {
+                        "exclusive": 2927.35,
+                        "inclusive": 3319.03,
+                        "tax": 391.68,
+                        "fees": 0.00,
+                        "taxDueSupplier": 0,
+                        "estimatedCommission": 0.00
+                    },
+                    "roomTypeNotGuaranteed": false,
+                    "paymentModel": "Merchant",
+                    "rate": {
+                        "currency": "USD",
+                        "exclusive": 585.47,
+                        "inclusive": 663.81,
+                        "tax": 78.34,
+                        "fees": 0.00,
+                        "method": "PRPN"
+                    },
+                    "perRoomPerNightRate": {
+                        "currency": "USD",
+                        "exclusive": 585.47,
+                        "inclusive": 663.81,
+                        "tax": 78.34,
+                        "fees": 0.00
+                    },
+                    "dailyRate": [
+                        {
+                            "date": "2024-10-23",
+                            "exclusive": 241.19,
+                            "inclusive": 273.46,
+                            "tax": 32.27,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-24",
+                            "exclusive": 320.32,
+                            "inclusive": 363.17,
+                            "tax": 42.85,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-25",
+                            "exclusive": 507.34,
+                            "inclusive": 575.23,
+                            "tax": 67.89,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-26",
+                            "exclusive": 528.93,
+                            "inclusive": 599.70,
+                            "tax": 70.77,
+                            "fees": 0.00,
+                            "method": "PN"
+                        },
+                        {
+                            "date": "2024-10-27",
+                            "exclusive": 1329.57,
+                            "inclusive": 1507.47,
+                            "tax": 177.90,
+                            "fees": 0.00,
+                            "method": "PN"
+                        }
+                    ],
+                    "promotionDetail": {
+                        "promotionId": -1,
+                        "codeEligible": false,
+                        "description": "",
+                        "typeDescription": "Limited Time Offer.",
+                        "savingAmount": 174.99,
+                        "promotionTypeId": 4078
+                    },
+                    "surcharges": [
+                        {
+                            "id": 272,
+                            "method": "PB",
+                            "charge": "Excluded",
+                            "margin": "n",
+                            "name": "Resort Fee",
+                            "rate": {
+                                "currency": "USD",
+                                "exclusive": 283.45,
+                                "inclusive": 283.45,
+                                "tax": 0.00,
+                                "fees": 0.00
+                            }
+                        }
+                    ],
+                    "taxBreakdown": [
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0.88,
+                            "amount": 12.72
+                        },
+                        {
+                            "id": "56",
+                            "typeValue": "Tax",
+                            "taxDescription": "Accommodation Tax",
+                            "translatedTaxDescription": "Accommodation Tax",
+                            "method": "PRPN",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 12.5,
+                            "amount": 73.72
+                        },
+                        {
+                            "id": "2",
+                            "typeValue": "Fee",
+                            "taxDescription": "Fee",
+                            "translatedTaxDescription": "Fee",
+                            "method": "PB",
+                            "currency": "USD",
+                            "base": "N",
+                            "taxable": "N",
+                            "percent": 0,
+                            "amount": 0
+                        }
+                    ],
+                    "cancellationPolicy": {
+                        "code": "3D1N_1N",
+                        "cancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "translatedCancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing! Any cancellation received within 3 days prior to the arrival date will incur the first night's charge. Failure to arrive at your hotel or property will be treated as a No-Show and will incur the first night's charge (Hotel policy).",
+                        "parameter": [
+                            {
+                                "days": 4,
+                                "charge": "N",
+                                "value": 0
+                            },
+                            {
+                                "days": 3,
+                                "charge": "N",
+                                "value": 1
+                            },
+                            {
+                                "days": 0,
+                                "charge": "N",
+                                "value": 1
+                            }
+                        ],
+                        "date": [
+                            {
+                                "before": "2024-10-20T00:00:00",
+                                "rate": {
+                                    "exclusive": 0.00,
+                                    "inclusive": 0.00,
+                                    "tax": 0.00,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "before": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 241.19,
+                                    "inclusive": 273.46,
+                                    "tax": 32.27,
+                                    "fees": 0.00
+                                }
+                            },
+                            {
+                                "onward": "2024-10-23T00:00:00",
+                                "rate": {
+                                    "exclusive": 241.19,
+                                    "inclusive": 273.46,
+                                    "tax": 32.27,
+                                    "fees": 0.00
+                                }
+                            }
+                        ]
+                    },
+                    "benefits": [
+                        {
+                            "id": 95,
+                            "benefitName": "Free WiFi",
+                            "translatedBenefitName": "Free WiFi"
+                        }
+                    ]
+                },
+
+
+we have room details like cancelation policy and others here but on the other hand 
+
+
+    {
+        "id": 85841,
+        "hotel_id": 2937,
+        "hotel_room_type_id": 752835270,
+        "standard_caption": "Venetian Luxury Sphere View King Suite",
+        "standard_caption_translated": "Venetian Luxury Sphere View King Suite",
+        "max_occupancy_per_room": 4,
+        "no_of_room": 1,
+        "size_of_room": 650,
+        "room_size_incl_terrace": false,
+        "views": "Mountain view",
+        "max_extrabeds": 0,
+        "max_infant_in_room": 0,
+        "hotel_room_type_picture": "https://pix8.agoda.net/hotelImages/2937/752835270/8779902bddd4d0af6efe45a85c30f0f1.jpg?ce=0&s=312x",
+        "bed_type": "1 king bed or 1 double bed",
+        "hotel_master_room_type_id": 0,
+        "hotel_room_type_alternate_name": "",
+        "shared_bathroom": false,
+        "smoking_nonsmoking": "NonSmoking",
+        "gender": ""
+    },
+
+
+we are getting size_of_room and max_occupancy_per_room from our database.
+
+so we have to combine that data and make as one response for frontend
+
+
+
+{
+  "hotel_name": "The Athens Gate Hotel",
+  "address_line_1": "10, Sygrou Avenue",
+  "longitude": 23.73154640197754,
+  "latitude": 37.96859359741211,
+  "images": {
+    "Lobby": [
+      "https://q-xx.bstatic.com/xdata/images/hotel/max500/47370604.jpg?k=d6d5a50c4e2b201276f5382d560d95b42c1b4076e7e6831d1f27a69eca7a69e3&o=&s=312x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max500/47370604.jpg?k=d6d5a50c4e2b201276f5382d560d95b42c1b4076e7e6831d1f27a69eca7a69e3&o=&s=312x"
+    ],
+    "Facilities": [
+      "https://q-xx.bstatic.com/xdata/images/hotel/max500/13880984.jpg?k=4288aa28774b6dc5d9cfc57c6ae49fd992931ba7524a0b76f1f942fed2bc8ede&o=&s=312x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max500/13880984.jpg?k=4288aa28774b6dc5d9cfc57c6ae49fd992931ba7524a0b76f1f942fed2bc8ede&o=&s=312x"
+    ],
+    "Exterior view": [
+      "https://q-xx.bstatic.com/xdata/images/hotel/max500/47362777.jpg?k=7a64836fb152c3e8e8ee2444f3fd3c0a7e5d6af4f22b8ff633733846c66b0a36&o=&s=312x",
+      "https://q-xx.bstatic.com/xdata/images/hotel/max500/47362781.jpg?k=08d115079b0c718978e6604751b322e4bb776bdf2207cfc19f4fd6a374a0cbac&o=&s=312x"
+    ]
+  },
+  "facilities": [
+    {
+      "property_group_description": "Cleanliness and safety",
+      "facilities": [
+        "Anti-viral cleaning products",
+        "Body thermometer",
+        "Breakfast in room",
+        "Breakfast takeaway service"
+      ]
+    },
+    {
+      "property_group_description": "Dining, drinking, and snacking",
+      "facilities": [
+        "Alternative meal arrangement",
+        "Bar",
+        "Breakfast [buffet]",
+        "Breakfast [continental]"
+      ]
+    },
+    {
+      "property_group_description": "Services and conveniences",
+      "facilities": [
+        "Air conditioning in public area",
+        "Concierge",
+        "Contactless check-in/out",
+        "Daily housekeeping"
+      ]
+    }
+  ],
+  "room_types": [
+    {
+      "id": 84243,
+      "hotel_room_type_id": 3028166,
+      "standard_caption": "Luxury Two Queen Suite City View",
+      "size_of_room": 65.03,
+      "max_occupancy_per_room": 4,
+      "room_details": {
+        "roomId": 3028166,
+        "blockId": "MDhkZjY2ZTItMDc3Mi0yYjE4LTUyYTQtMTBkODZiYmIzN2QxOjMzMg==",
+        "roomName": "Luxury Two Queen Suite City View",
+        "parentRoomName": "Luxury Two Queen Suite City View",
+        "translatedRoomName": "Luxury Two Queen Suite City View",
+        "blockIdBackup": "08df66e2-0772-2b18-52a4-10d86bbb37d1",
+        "parentRoomId": 3028166,
+        "ratePlanId": 11969931,
+        "freeWifi": false,
+        "remainingRooms": 150,
+        "normalBedding": 4,
+        "extraBeds": 0,
+        "freeBreakfast": false,
+        "freeCancellation": true,
+        "totalPayment": {
+          "exclusive": 2927.35,
+          "inclusive": 3319.03,
+          "tax": 391.68,
+          "fees": 0.00,
+          "taxDueSupplier": 0,
+          "estimatedCommission": 0.00
+        },
+        "roomTypeNotGuaranteed": false,
+        "paymentModel": "Merchant",
+        "rate": {
+          "currency": "USD",
+          "exclusive": 585.47,
+          "inclusive": 663.81,
+          "tax": 78.34,
+          "fees": 0.00,
+          "method": "PRPN"
+        },
+        "dailyRate": [
+          {
+            "date": "2024-10-23",
+            "exclusive": 241.19,
+            "inclusive": 273.46,
+            "tax": 32.27,
+            "fees": 0.00,
+            "method": "PN"
+          },
+          {
+            "date": "2024-10-24",
+            "exclusive": 320.32,
+            "inclusive": 363.17,
+            "tax": 42.85,
+            "fees": 0.00,
+            "method": "PN"
+          }
+        ],
+        "promotionDetail": {
+          "promotionId": -1,
+          "codeEligible": false,
+          "description": "",
+          "typeDescription": "Limited Time Offer.",
+          "savingAmount": 174.99,
+          "promotionTypeId": 4078
+        },
+        "surcharges": [
+          {
+            "id": 272,
+            "method": "PB",
+            "charge": "Excluded",
+            "margin": "n",
+            "name": "Resort Fee",
+            "rate": {
+              "currency": "USD",
+              "exclusive": 283.45,
+              "inclusive": 283.45,
+              "tax": 0.00,
+              "fees": 0.00
+            }
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "id": "56",
+            "typeValue": "Tax",
+            "taxDescription": "Accommodation Tax",
+            "translatedTaxDescription": "Accommodation Tax",
+            "method": "PRPN",
+            "currency": "USD",
+            "amount": 12.72
+          }
+        ],
+        "cancellationPolicy": {
+          "code": "3D1N_1N",
+          "cancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing!",
+          "parameter": [
+            {
+              "days": 4,
+              "charge": "N",
+              "value": 0
+            }
+          ]
+        },
+        "benefits": [
+          {
+            "id": 95,
+            "benefitName": "Free WiFi",
+            "translatedBenefitName": "Free WiFi"
+          }
+        ]
+      }
+    },
+    {
+      "id": 85841,
+      "hotel_room_type_id": 752835270,
+      "standard_caption": "Venetian Luxury Sphere View King Suite",
+      "size_of_room": 650,
+      "max_occupancy_per_room": 4,
+      "room_details": {
+        "roomId": 752835270,
+        "blockId": "MDhkZjY2ZTItMDc3Mi0yYjE4LTUyYTQtMTBkODZiYmIzN2QxOjMzMg==",
+        "roomName": "Venetian Luxury Sphere View King Suite",
+        "parentRoomName": "Venetian Luxury Sphere View King Suite",
+        "translatedRoomName": "Venetian Luxury Sphere View King Suite",
+        "blockIdBackup": "08df66e2-0772-2b18-52a4-10d86bbb37d1",
+        "parentRoomId": 752835270,
+        "ratePlanId": 11969931,
+        "freeWifi": true,
+        "remainingRooms": 1,
+        "normalBedding": 2,
+        "extraBeds": 0,
+        "freeBreakfast": true,
+        "freeCancellation": true,
+        "totalPayment": {
+          "exclusive": 3200.00,
+          "inclusive": 3800.00,
+          "tax": 600.00,
+          "fees": 0.00,
+          "taxDueSupplier": 0,
+          "estimatedCommission": 0.00
+        },
+        "roomTypeNotGuaranteed": false,
+        "paymentModel": "Merchant",
+        "rate": {
+          "currency": "USD",
+          "exclusive": 650.00,
+          "inclusive": 700.00,
+          "tax": 50.00,
+          "fees": 0.00,
+          "method": "PRPN"
+        },
+        "dailyRate": [
+          {
+            "date": "2024-10-23",
+            "exclusive": 450.00,
+            "inclusive": 500.00,
+            "tax": 50.00
+        "dailyRate": [
+          {
+            "date": "2024-10-23",
+            "exclusive": 450.00,
+            "inclusive": 500.00,
+            "tax": 50.00,
+            "fees": 0.00,
+            "method": "PN"
+          },
+          {
+            "date": "2024-10-24",
+            "exclusive": 470.00,
+            "inclusive": 520.00,
+            "tax": 50.00,
+            "fees": 0.00,
+            "method": "PN"
+          }
+        ],
+        "promotionDetail": {
+          "promotionId": -1,
+          "codeEligible": false,
+          "description": "Flash Sale",
+          "typeDescription": "Limited Time Offer.",
+          "savingAmount": 200.00,
+          "promotionTypeId": 4078
+        },
+        "surcharges": [
+          {
+            "id": 272,
+            "method": "PB",
+            "charge": "Excluded",
+            "margin": "n",
+            "name": "Resort Fee",
+            "rate": {
+              "currency": "USD",
+              "exclusive": 200.00,
+              "inclusive": 200.00,
+              "tax": 0.00,
+              "fees": 0.00
+            }
+          }
+        ],
+        "taxBreakdown": [
+          {
+            "id": "56",
+            "typeValue": "Tax",
+            "taxDescription": "Accommodation Tax",
+            "translatedTaxDescription": "Accommodation Tax",
+            "method": "PRPN",
+            "currency": "USD",
+            "amount": 30.00
+          }
+        ],
+        "cancellationPolicy": {
+          "code": "3D1N_1N",
+          "cancellationText": "Risk-free booking! Cancel before 2024-10-20 and you'll pay nothing!",
+          "parameter": [
+            {
+              "days": 3,
+              "charge": "N",
+              "value": 0
+            }
+          ]
+        },
+        "benefits": [
+          {
+            "id": 95,
+            "benefitName": "Free WiFi",
+            "translatedBenefitName": "Free WiFi"
+          }
+        ]
+      }
+    }
+  ]
+}            

@@ -1,0 +1,531 @@
+For First Page Load
+1. Hotel Image Main
+Content - PostgreSQL
+SELECT * 
+FROM public.pictures 
+WHERE hotel_id = 147265 
+AND caption = 'Exterior view'
+limit 1
+2. Stars
+select star_rating from public.hotels where hotel_id = 147265
+3. Address
+PostgreSQL - 
+SELECT address_line_1 
+FROM public.addresses 
+WHERE hotel_id = 147265;
+4. Description
+PostgreSQL - select overview from public.hotel_descriptions where hotel_id = 105040
+5. Cheapsest price what returned
+agoda availability endpoint returns json with element properties, in properties we have rooms, for each room we have format "roomId": 3028175, and there is dailyRate for each room and we have to filter it to show here cheapest prices for first page 
+6. Cashback
+yes
+7. Benefits 
+Availability Request
+"benefits": [
+    {
+        "id": 95,
+        "benefitName": "Free WiFi",
+        "translatedBenefitName": "Free WiFi"
+    }
+
+8. Free cancelation and Breakfast
+"freeCancellation": true,
+9. Hotel Name
+select hotel_name from public.hotels where hotel_id = 147265
+
+
+
+
+## Get all information for all hotels with one query
+
+```
+SELECT
+    h.hotel_id,
+    h.hotel_name,
+    h.star_rating,
+    (SELECT url FROM public.pictures p WHERE p.hotel_id = h.hotel_id AND p.caption = 'Exterior view' LIMIT 1) AS image_url,
+    (SELECT address_line_1 FROM public.addresses a WHERE a.hotel_id = h.hotel_id LIMIT 1) AS address,
+    (SELECT overview FROM public.hotel_descriptions d WHERE d.hotel_id = h.hotel_id LIMIT 1) AS description
+FROM
+    public.hotels h
+WHERE
+    h.hotel_id IN (147265, 2937, 105040, 105262)
+LIMIT 20;
+```
+
+
+## Get all information for all hotels with one query but in JSON Format
+```
+SELECT json_agg(
+    json_build_object(
+        'hotel_id', h.hotel_id,
+        'hotel_name', h.hotel_name,
+        'star_rating', h.star_rating,
+        'image_url', (SELECT url FROM public.pictures p WHERE p.hotel_id = h.hotel_id AND p.caption = 'Exterior view' LIMIT 1),
+        'address', (SELECT address_line_1 FROM public.addresses a WHERE a.hotel_id = h.hotel_id LIMIT 1),
+        'description', (SELECT overview FROM public.hotel_descriptions d WHERE d.hotel_id = h.hotel_id LIMIT 1)
+    )
+) AS hotels
+FROM public.hotels h
+WHERE h.hotel_id IN (147265, 2937, 105040, 105262)
+LIMIT 20;
+```
+
+Output:
+```
+[
+  {
+    "hotel_id": 147265,
+    "hotel_name": "South Point Hotel Casino and Spa",
+    "star_rating": 4,
+    "image_url": "https://pix8.agoda.net/hotelImages/147265/-1/0677c66c5855751296738cb3c9254cc0.jpg?ca=9&ce=1&s=312x",
+    "address": "9777 Las Vegas Boulevard South",
+    "description": ""
+  },
+  {
+    "hotel_id": 105262,
+    "hotel_name": "Library Hotel",
+    "star_rating": 4,
+    "image_url": "https://pix8.agoda.net/hotelImages/105/105262/105262_16101823390047891860.jpg?ca=6&ce=1&s=312x",
+    "address": "299 Madison Avenue at 41st Street",
+    "description": "Great care is taken to ensure guests experience comfort through top-notch services and amenities. Remain linked during your visit by utilizing the complimentary internet access available.Prior to your check-in date, you can arrange airport transportation services, guaranteeing a seamless and efficient experience for both arrival and departure. Parking is accessible, supplied by the hotel for guests who arrive by car.The hotel is completely smoke-free. Each morning at Library Hotel, a scrumptious, homemade breakfast kick-starts the day. During your visit, indulge in a range of delightful culinary choices at hotel to enhance your experience.Indulge in the numerous pursuits available at Library Hotel. Eliminate those holiday calories by stopping by hotel and making use of their well-equipped exercise amenities."
+  },
+  {
+    "hotel_id": 105040,
+    "hotel_name": "Hotel Elysee",
+    "star_rating": 4,
+    "image_url": "https://pix8.agoda.net/hotelImages/105/105040/105040_15123003370038795544.jpg?ca=6&ce=1&s=312x",
+    "address": "60 East 54th Street",
+    "description": "At Hotel Elysee, exceptional service and top-notch amenities create a memorable experience for guests. Complimentary internet access is available in the hotel to ensure you stay connected during your visit.For guests with their own vehicle, parking facilities are provided. Due to health concerns, smoking is strictly prohibited within the entire premises of hotel. A delightful breakfast is the perfect way to begin your day, and at Hotel Elysee, you can always indulge in a scrumptious meal on-site. Allow your journey to be free from the pangs of hunger! On-site eateries offer delicious and accessible meal choices."
+  },
+  {
+    "hotel_id": 2937,
+    "hotel_name": "The Venetian Resort",
+    "star_rating": 5,
+    "image_url": "https://q-xx.bstatic.com/xdata/images/hotel/max500/115325234.jpg?k=d2c43e45f17a7465167886a6ceffb828b167d98f8a5ffd0417d64836a7411175&o=&s=312x",
+    "address": "3355 Las Vegas Boulevard South",
+    "description": "Great care is taken to ensure guests experience comfort through top-notch services and amenities. Remain linked during your visit by utilizing the complimentary internet access available.Parking is accessible, supplied by the resort for guests who arrive by car. In limited designated zones, smoking is exclusively permitted.Crafted for coziness, every guestroom provides an array of features, guaranteeing a tranquil night's sleep while maintaining the level of comfort. Chosen accommodation prices might include entry to the executive lounge, offering premium services amid an ambiance of refined extravagance. Each morning at The Venetian Resort, a scrumptious, homemade breakfast kick-starts the day. Begin your holiday mornings right with your essential cup of coffee, offered daily at the cafe on-site.During your visit, indulge in a range of delightful culinary choices at resort to enhance your experience.Indulge in the numerous pursuits available at The Venetian Resort. Begin your holiday perfectly by taking a plunge into the swimming pool.At the resort, enjoy a laid-back beverage experience by the poolside bar, sipping on a soothing cocktail. Eliminate those holiday calories by stopping by resort and making use of their well-equipped exercise amenities."
+  }
+]
+```
+
+
+
+Hotel Detailed Information
+1. Hotel Name
+select hotel_name from public.hotels where hotel_id = 147265
+2. Hotel Address
+PostgreSQL - 
+SELECT address_line_1 
+FROM public.addresses 
+WHERE hotel_id = 147265;
+3. Hotel All Images
+hotel images are groupd by captions
+
+
+get hotel all images group by captioned in json format with query:
+
+
+SELECT json_object_agg(
+    caption, urls
+) AS grouped_pictures
+FROM (
+    SELECT caption, json_agg(url) AS urls
+    FROM public.pictures
+    WHERE hotel_id = 147265
+    GROUP BY caption
+) AS subquery;
+
+
+
+output:
+
+{
+  "Bed": [
+    "https://pix8.agoda.net/hotelImages/147265/-1/5709a9756e24261be17a0e38b0f6c91c.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/0738b266804dedaae43d26bf3e1b54aa.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/5709a9756e24261be17a0e38b0f6c91c.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/0738b266804dedaae43d26bf3e1b54aa.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/5709a9756e24261be17a0e38b0f6c91c.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/0738b266804dedaae43d26bf3e1b54aa.jpg?ca=13&ce=1&s=312x"
+  ],
+  "Lobby": [
+    "https://pix8.agoda.net/hotelImages/147265/-1/73e9fa41130502eae9fa38085519695d.jpg?ca=9&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/73e9fa41130502eae9fa38085519695d.jpg?ca=9&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/73e9fa41130502eae9fa38085519695d.jpg?ca=9&ce=1&s=312x"
+  ],
+  "Casino": [
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463779.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463775.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463771.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463779.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463775.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463771.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463779.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463775.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463771.jpg?ca=5&ce=1&s=312x"
+  ],
+  "Room plan": [
+    "https://pix8.agoda.net/hotelImages/147265/-1/501df5164d4df05a260cb3b79aab0a2a.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/501df5164d4df05a260cb3b79aab0a2a.jpg?ca=13&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/501df5164d4df05a260cb3b79aab0a2a.jpg?ca=13&ce=1&s=312x"
+  ],
+  "Facilities": [
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463780.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463780.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463780.jpg?ca=5&ce=1&s=312x"
+  ],
+  "Exterior view": [
+    "https://pix8.agoda.net/hotelImages/147265/-1/0677c66c5855751296738cb3c9254cc0.jpg?ca=9&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/0677c66c5855751296738cb3c9254cc0.jpg?ca=9&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147265/-1/0677c66c5855751296738cb3c9254cc0.jpg?ca=9&ce=1&s=312x"
+  ],
+  "Restaurant": [
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463772.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463778.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463773.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463772.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463778.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463773.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463772.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463778.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463773.jpg?ca=5&ce=1&s=312x"
+  ],
+  "Spa": [
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463774.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463774.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463774.jpg?ca=5&ce=1&s=312x"
+  ],
+  "Hot tub": [
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463782.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463782.jpg?ca=5&ce=1&s=312x",
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463782.jpg?ca=5&ce=1&s=312x"
+  ],
+  "Recreational facilities": [
+    "https://pix8.agoda.net/hotelImages/147/147265/147265_15083122570035463781.jpg?ca=5&ce=1&s=312x",
+  ]
+}
+
+
+get unique names of captios with query
+
+
+```
+SELECT json_agg(DISTINCT caption) 
+FROM public.pictures;
+```
+
+output
+````
+[
+  "",
+  "Amenity (Guest room)",
+  "Attractions",
+  "Balcony/terrace",
+  "Ballroom",
+  "Banquet hall",
+  "Bar",
+  "Bar/lounge",
+  "Bathroom",
+  "Bed",
+  "Bedroom",
+  "Buffet",
+  "Business center",
+  "Casino",
+  "Coffee shop",
+  "Entrance",
+  "Executive lounge",
+  "Exterior view",
+  "Facilities",
+  "Fitness center",
+  "Floor plans",
+  "Food and beverages",
+  "Garden",
+  "Guestroom",
+  "Hot spring bath",
+  "Hot tub",
+  "Interior view",
+  "Kid’s club",
+  "Lobby",
+  "Map",
+  "Meeting room / ballrooms",
+  "Nearby attraction",
+  "Parking lot",
+  "Playground",
+  "Poolside bar",
+  "Public areas",
+  "Reception",
+  "Recreational facilities",
+  "Restaurant",
+  "Restaurant (Private room)",
+  "Room plan",
+  "Sauna",
+  "Separate living room",
+  "Shared lounge/TV area",
+  "Shops",
+  "Spa",
+  "Sports and activities",
+  "Suite room",
+  "Surrounding environment",
+  "Swimming pool",
+  "Swimming pool [outdoor]",
+  "View",
+  "Water park"
+]
+```
+
+4. All Amenites
+We have an amenity categories, in api its called facilities not amenities so each facility has property_group_descriptions which are groups and used to group facilities. here are a list of groups
+
+{
+  "property_group_descriptions": [
+    "Access",
+    "Accessibility",
+    "Available in all rooms",
+    "Cleanliness and safety",
+    "Dining, drinking, and snacking",
+    "Family",
+    "For the kids",
+    "Getting around",
+    "Internet access",
+    "Land sports",
+    "Languages spoken",
+    "Outdoor",
+    "Services and conveniences",
+    "Sports equipment rental",
+    "Swimming & soaking",
+    "Things to do, ways to relax"
+  ]
+}
+
+To get all facilities groupd by property_group_descriptions in json format you can execute sql query
+
+```
+SELECT json_agg(
+         json_build_object(
+             'property_group_description', property_group_description,
+             'facilities', facilities
+         )
+       ) AS grouped_facilities
+FROM (
+    SELECT property_group_description, array_agg(property_name) AS facilities
+    FROM public.facilities
+    WHERE hotel_id = 2937
+    GROUP BY property_group_description
+) subquery;
+```
+
+Output is:
+
+```
+[
+  {
+    "property_group_description": "Cleanliness and safety",
+    "facilities": [
+      "Anti-viral cleaning products",
+      "Breakfast in room",
+      "Breakfast takeaway service",
+      "Cashless payment service",
+      "Doctor/nurse on call",
+      "First aid kit",
+      "Free face masks",
+      "Guest rooms seal after sanitization",
+      "Hotel room service app",
+      "Hot water linen and laundry washing",
+      "Individually-wrapped food options",
+      "Professional-grade sanitizing services",
+      "Room sanitization opt-out available",
+      "Rooms sanitized between stays",
+      "Safe dining setup",
+      "Sanitized kitchen and tableware items",
+      "Shared stationery removed"
+    ]
+  },
+  {
+    "property_group_description": "Dining, drinking, and snacking",
+    "facilities": [
+      "Alternative meal arrangement",
+      "Bar",
+      "Breakfast [continental]",
+      "Coffee shop",
+      "Happy hour",
+      "Poolside bar",
+      "Restaurants",
+      "Room service [24-hour]",
+      "Vending machine"
+    ]
+  },
+  {
+    "property_group_description": "Services and conveniences",
+    "facilities": [
+      "Air conditioning in public area",
+      "Cash withdrawal",
+      "Concierge",
+      "Convenience store",
+      "Currency exchange",
+      "Daily housekeeping",
+      "Doorman",
+      "Dry cleaning",
+      "Elevator",
+      "Facilities for disabled guests",
+      "Food delivery",
+      "Gift/souvenir shop",
+      "Grooming service",
+      "Heating in public area",
+      "Ironing service",
+      "Laundry service",
+      "Lockers",
+      "Luggage storage",
+      "Meeting/banquet facilities",
+      "Safety deposit boxes",
+      "Salon",
+      "Shops",
+      "Smoking area",
+      "Terrace",
+      "Xerox/fax in business center"
+    ]
+  },
+  {
+    "property_group_description": "For the kids",
+    "facilities": [
+      "Family room",
+      "Kids meal"
+    ]
+  },
+  {
+    "property_group_description": "Getting around",
+    "facilities": [
+      "Car park [charges apply]",
+      "Car power charging station",
+      "Rental car",
+      "Shuttle service",
+      "Taxi service",
+      "Valet parking"
+    ]
+  },
+  {
+    "property_group_description": "Access",
+    "facilities": [
+      "Allergy-free rooms",
+      "CCTV in common areas",
+      "CCTV outside property",
+      "Check-in/out [express]",
+      "Check-in [24-hour]",
+      "Fire extinguisher",
+      "Front desk [24-hour]",
+      "Non-smoking rooms",
+      "Safety/security feature",
+      "Security [24-hour]",
+      "Service animals are welcome",
+      "Smoke alarms"
+    ]
+  },
+  {
+    "property_group_description": "Internet access",
+    "facilities": [
+      "Free Wi-Fi in all rooms!",
+      "Internet",
+      "Internet services",
+      "Wi-Fi in public areas"
+    ]
+  },
+  {
+    "property_group_description": "Available in all rooms",
+    "facilities": [
+      "Wake-up service",
+      "Accessible by elevator",
+      "Air conditioning",
+      "Alarm clock",
+      "Bathrobes",
+      "Bathtub",
+      "Carpeting",
+      "Closet",
+      "Desk",
+      "Hair dryer",
+      "Heating",
+      "In-room safe box",
+      "Interconnecting room(s) available",
+      "Ironing facilities",
+      "Linens",
+      "Mini bar",
+      "Private bathroom",
+      "Radio",
+      "Safety/security feature",
+      "Satellite/cable channels",
+      "Seating area",
+      "Shower",
+      "Slippers",
+      "Smoke detector",
+      "Socket near the bed",
+      "Sofa",
+      "Telephone",
+      "Tile/marble flooring",
+      "Toiletries",
+      "Towels",
+      "Trash cans"
+    ]
+  },
+  {
+    "property_group_description": "Languages spoken",
+    "facilities": [
+      "English",
+      "Arabic",
+      "Chinese [Cantonese]",
+      "Chinese [Mandarin]",
+      "Filipino",
+      "French",
+      "German",
+      "Indonesian",
+      "Italian",
+      "Japanese",
+      "Korean",
+      "Malay",
+      "Portuguese",
+      "Russian",
+      "Spanish",
+      "Thai",
+      "Vietnamese"
+    ]
+  },
+  {
+    "property_group_description": "Accessibility",
+    "facilities": [
+      "Wheelchair accessible"
+    ]
+  },
+  {
+    "property_group_description": "Things to do, ways to relax",
+    "facilities": [
+      "Casino",
+      "Fitness center",
+      "Garden",
+      "Hot tub",
+      "Karaoke",
+      "Massage",
+      "Nightclub",
+      "On-site entertainment",
+      "Sauna",
+      "Spa",
+      "Spa/sauna",
+      "Steamroom",
+      "Swimming pool [outdoor]",
+      "Ticket services",
+      "Tours",
+      "Yoga room"
+    ]
+  }
+]
+```
+
+5. Hotel's available rooms detailed information from db (pictures, etc)
+SELECT * 
+FROM public.room_types 
+WHERE hotel_id = 2937 
+AND hotel_room_type_id = 3028166;
+
+
+6. Map longitude and latitude information
+SELECT longitude, latitude 
+FROM public.hotels 
+WHERE hotel_id = 2937;
+

@@ -79,7 +79,7 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
         logger.info(f"Fetching availability for {len(hotel_ids)} hotels")
         
         try:
-            availability_data = await fetch_availability(room_request, hotel_ids)
+            availability_data = await fetch_availability(room_request)
         except httpx.HTTPError as e:
             logger.error(f"HTTP error occurred: {e}")
             logger.error(f"Response content: {e.response.text if e.response else 'No response content'}")
