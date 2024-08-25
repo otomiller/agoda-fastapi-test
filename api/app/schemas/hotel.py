@@ -18,6 +18,13 @@ class HotelResponse(BaseModel):
     hotel_id: int
     hotel_name: str
     star_rating: float
+    image_url: Optional[str] = None
+    address: Optional[str] = None
+    description: Optional[str] = None
+    cheapest_price: Optional[float] = None
+    benefits: Optional[List[str]] = None
+    free_cancellation: Optional[bool] = None
+    free_breakfast: Optional[bool] = None
     rooms: Optional[List[Room]] = None
 
 class HotelListResponse(BaseModel):
