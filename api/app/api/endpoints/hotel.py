@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 async def get_hotel_detail(hotel_id: int, search_id: str, db: AsyncSession = Depends(get_db)):
     try:
         logger.info(f"Fetching hotel detail for hotel ID: {hotel_id}")
-        hotel = await fetch_hotel_detail(hotel_id)
+        hotel = await fetch_hotel_detail(hotel_id, db)
 
         if not hotel:
             logger.warning(f"No hotel found for the hotel ID: {hotel_id}")
