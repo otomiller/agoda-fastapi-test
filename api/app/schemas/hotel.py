@@ -20,5 +20,6 @@ class HotelResponse(BaseModel):
     star_rating: float
     rooms: Optional[List[Room]] = None
 
-    class Config:
-        from_attributes = True
+class HotelListResponse(BaseModel):
+    hotels: List[HotelResponse]
+    message: Optional[str] = None

@@ -1,6 +1,9 @@
+import logging
 from fastapi import FastAPI
 from app.api.endpoints import hotels
 from app.core.config import settings
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
 
