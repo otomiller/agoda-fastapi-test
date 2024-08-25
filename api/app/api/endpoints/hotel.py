@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+import httpx
 
 from app.core.database import get_db
 from app.schemas.hotel import HotelDetailResponse
@@ -23,9 +24,16 @@ async def get_hotel_detail(hotel_id: int, search_id: str, db: AsyncSession = Dep
         logger.info(f"Fetching availability for hotel ID: {hotel_id}")
         try:
             availability_data = await fetch_availability_for_hotel(hotel_id, search_id)
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                logger.warning(f"No availability data found for hotel ID: {hotel_id}")
+                availability_data = {"rooms": []}
+            else:
+                logger.error(f"Error fetching availability data: {e}")
+                raise HTTPException(status_code=500, detail=f"Error fetching availability data: {str(e)}")
         except Exception as e:
-            logger.error(f"Error fetching availability data: {e}")
-            raise HTTPException(status_code=500, detail=f"Error fetching availability data: {str(e)}")
+            logger.error(f"Unexpected error fetching availability data: {e}")
+            raise HTTPException(status_code=500, detail=f"Unexpected error fetching availability data: {str(e)}")
 
         logger.info("Combining hotel and availability data")
         hotel_detail = HotelDetailResponse(
