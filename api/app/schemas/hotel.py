@@ -25,7 +25,7 @@ class HotelDetailResponse(BaseModel):
     hotel_id: int
     hotel_name: str
     star_rating: int
-    address: str
-    description: str
-    amenities: List[str]
+    address: Optional[str] = ''
+    description: Optional[str] = ''
+    amenities: Optional[List[str]] = []
     rooms: List[Room]
