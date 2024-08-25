@@ -4,7 +4,7 @@ import logging
 import httpx
 
 from app.core.database import get_db
-from app.schemas.hotel import HotelDetailResponse
+from app.schemas.hotel import HotelDetailResponse, ImageCategory, Facility, RoomType
 from app.services.hotels import fetch_hotel_detail
 from app.services.availability import fetch_availability_for_hotel
 
@@ -41,9 +41,9 @@ async def get_hotel_detail(hotel_id: int, search_id: str, db: AsyncSession = Dep
             address_line_1=hotel.get('address', ''),
             longitude=hotel.get('longitude', 0.0),
             latitude=hotel.get('latitude', 0.0),
-            images=hotel.get('images', {}),
-            facilities=hotel.get('facilities', []),
-            room_types=availability_data.get("room_types", [])
+            images=ImageCategory(images=hotel.get('images', {})),
+            facilities=[Facility(**facility) for facility in hotel.get('facilities', [])],
+            room_types=[RoomType(**room_type) for room_type in availability_data.get("room_types", [])]
         )
 
         logger.info(f"Returning hotel detail for hotel ID: {hotel_id}")
