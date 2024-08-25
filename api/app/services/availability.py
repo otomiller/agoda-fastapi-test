@@ -22,4 +22,17 @@ async def fetch_availability_for_hotel(hotel_id: int, search_id: str) -> dict:
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        return {
+            "room_types": [
+                {
+                    "id": room["id"],
+                    "hotel_room_type_id": room["hotel_room_type_id"],
+                    "standard_caption": room["standard_caption"],
+                    "size_of_room": room["size_of_room"],
+                    "max_occupancy_per_room": room["max_occupancy_per_room"],
+                    "room_details": room["room_details"]
+                }
+                for room in data.get("room_types", [])
+            ]
+        }
