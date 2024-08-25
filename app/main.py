@@ -13,6 +13,9 @@ app = FastAPI()
 API_KEY = os.getenv("API_KEY")
 AGODA_API_URL = "https://sandbox-affiliateapi.agoda.com/api/v4/property/availability"
 
+from typing import List, Optional
+from pydantic import BaseModel, Field
+
 class AvailabilityRequest(BaseModel):
     checkIn: str
     checkOut: str
@@ -20,10 +23,15 @@ class AvailabilityRequest(BaseModel):
     adults: int
     children: int
     cityId: int
+    childrenAges: Optional[List[int]] = Field(default_factory=list)
+    language: str = "en-us"
+    currency: str = "USD"
+    userCountry: str = "US"
 
-async def fetch_availability(params):
+async def fetch_availability(payload):
     async with httpx.AsyncClient() as client:
-        response = await client.get(AGODA_API_URL, params=params)
+        headers = {"Content-Type": "application/json", "ApiKey": API_KEY}
+        response = await client.post(AGODA_API_URL, json=payload, headers=headers)
         return response.json()
 
 @app.get("/hotels", response_model=List[schemas.Hotel])
@@ -53,20 +61,36 @@ async def check_hotel_availability(data: AvailabilityRequest, db: Session = Depe
     hotels = db.query(models.Hotel).filter(models.Hotel.city_id == data.cityId).all()
     hotel_ids = [hotel.hotel_id for hotel in hotels]
     
-    params = {
-        "apikey": API_KEY,
-        "mdate": data.checkIn,
-        "mtypeid": 1,
-        "siteID": 1923846,
-        "checkIn": data.checkIn,
-        "checkOut": data.checkOut,
-        "rooms": data.rooms,
-        "adults": data.adults,
-        "children": data.children,
-        "propertyIds": ",".join(map(str, hotel_ids))
+    payload = {
+        "waitTime": 60,
+        "criteria": {
+            "propertyIds": hotel_ids,
+            "checkIn": data.checkIn,
+            "checkOut": data.checkOut,
+            "rooms": data.rooms,
+            "adults": data.adults,
+            "children": data.children,
+            "childrenAges": data.childrenAges,
+            "language": data.language,
+            "currency": data.currency,
+            "userCountry": data.userCountry
+        },
+        "features": {
+            "ratesPerProperty": 25,
+            "extra": [
+                "content",
+                "surchargeDetail",
+                "CancellationDetail",
+                "BenefitDetail",
+                "dailyRate",
+                "taxDetail",
+                "rateDetail",
+                "promotionDetail"
+            ]
+        }
     }
     
-    availability_data = await fetch_availability(params)
+    availability_data = await fetch_availability(payload)
     
     results = []
     for property in availability_data.get("properties", []):
