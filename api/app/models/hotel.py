@@ -1,10 +1,7 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, JSON
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from app.core.database_config import Base
-
-Base = declarative_base()
+from app.core.database_config import Base  # Use this as your Base
 
 class Hotel(Base):
     __tablename__ = "hotels"
@@ -20,33 +17,37 @@ class Hotel(Base):
     addresses = relationship("Address", back_populates="hotel")
     pictures = relationship("Picture", back_populates="hotel")
 
+
 class HotelDescription(Base):
     __tablename__ = "hotel_descriptions"
 
     id = Column(Integer, primary_key=True, index=True)
-    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id"))
+    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id", ondelete="CASCADE"), nullable=False)
     overview = Column(Text)
 
     hotel = relationship("Hotel", back_populates="description")
+
 
 class Address(Base):
     __tablename__ = "addresses"
 
     id = Column(Integer, primary_key=True, index=True)
-    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id"))
+    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id", ondelete="CASCADE"), nullable=False)
     address_line_1 = Column(String)
 
     hotel = relationship("Hotel", back_populates="addresses")
+
 
 class Picture(Base):
     __tablename__ = "pictures"
 
     id = Column(Integer, primary_key=True, index=True)
-    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id"))
+    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id", ondelete="CASCADE"), nullable=False)
     caption = Column(String)
     url = Column(String)
 
     hotel = relationship("Hotel", back_populates="pictures")
+
 
 class SearchResult(Base):
     __tablename__ = "search_results"

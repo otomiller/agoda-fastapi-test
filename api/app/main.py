@@ -30,8 +30,8 @@ app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
 app.add_middleware(SentryAsgiMiddleware)
 
 # Include routers for your API endpoints
-app.include_router(hotels.router, prefix="/api")  # Existing router for other endpoints
-app.include_router(hotel_details.router, prefix="/api/hotels")
+app.include_router(hotels.router, prefix="/api")
+app.include_router(hotel_details.router, prefix="/api")
 
 # Test route for Sentry (optional)
 @app.get("/sentry-debug")

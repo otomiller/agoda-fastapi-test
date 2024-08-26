@@ -1,4 +1,5 @@
 import httpx
+from fastapi import HTTPException
 import xml.etree.ElementTree as ET
 import logging
 from app.core.config import settings
@@ -6,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.models.hotel import Hotel, HotelDescription, Address, Picture
 from typing import List, Dict
+from sqlalchemy.orm import selectinload
+
 
 logger = logging.getLogger(__name__)
 
@@ -63,27 +66,40 @@ async def get_hotels_from_db(db: AsyncSession, city_id: int) -> List[Dict]:
 
 async def fetch_hotel_detail(hotel_id: int, db: AsyncSession):
     try:
-        # Fetch the hotel record by its ID
-        result = await db.execute(select(Hotel).where(Hotel.hotel_id == hotel_id))
-        
-        # Extract the hotel record or return None if not found
+        # Use selectinload to eagerly load relationships
+        result = await db.execute(
+            select(Hotel)
+            .options(selectinload(Hotel.addresses), selectinload(Hotel.description))
+            .where(Hotel.hotel_id == hotel_id)
+        )
         hotel = result.scalar_one_or_none()
-        
-        if hotel:
-            # Return hotel details as a dictionary
-            return {
-                'hotel_id': hotel.hotel_id,
-                'hotel_name': hotel.hotel_name,
-                'star_rating': hotel.star_rating,
-                'address': hotel.address,
-                'description': hotel.description,
-                'amenities': hotel.amenities,
-            }
+
+        if not hotel:
+            logger.warning(f"Hotel with ID {hotel_id} not found.")
+            raise HTTPException(status_code=404, detail=f"Hotel not found with ID: {hotel_id}")
+
+        # Fetch the address and description
+        if hotel.addresses:
+            address = hotel.addresses[0]  # Select the first address for simplicity (or adjust as needed)
+            address_str = f"{address.street}, {address.city}, {address.country}"  # Adjust based on your Address model
         else:
-            logger.warning(f"Hotel not found with ID: {hotel_id}")
-            return None
-    
+            address_str = "Address not available"
+
+        hotel_data = {
+            'hotel_id': hotel.hotel_id,
+            'hotel_name': hotel.hotel_name,
+            'star_rating': hotel.star_rating,
+            'address': address_str,
+            'description': hotel.description.description_text if hotel.description else "Description not available",
+            'amenities': [],  # Update this part with amenities if available in related models
+        }
+
+        return hotel_data
+
+    except HTTPException as http_ex:
+        logger.error(f"HTTPException: {http_ex.detail}")
+        raise
     except Exception as e:
-        # Log the error with hotel ID for debugging
-        logger.error(f"Error fetching hotel detail for hotel ID {hotel_id}: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching hotel detail.")
+        # Log the full exception details for troubleshooting
+        logger.error(f"Error fetching hotel detail for hotel ID {hotel_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error fetching hotel detail.")    

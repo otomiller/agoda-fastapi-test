@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
-
+from fastapi import HTTPException
 from app.core.database import get_db
 from app.schemas.hotel import HotelDetailResponse
 from app.services.hotels import fetch_hotel_detail
@@ -15,8 +15,8 @@ async def get_hotel_detail(hotel_id: int, search_id: str, db: AsyncSession = Dep
     try:
         logger.info(f"Received request for hotel details. hotel_id: {hotel_id}, search_id: {search_id}")
 
-        # Fetch the hotel details
-        hotel = await fetch_hotel_detail(hotel_id)
+        # Fetch the hotel details and pass the db session
+        hotel = await fetch_hotel_detail(hotel_id, db)
         if not hotel:
             logger.warning(f"Hotel with ID {hotel_id} not found.")
             raise HTTPException(status_code=404, detail=f"Hotel not found with ID: {hotel_id}")
