@@ -51,5 +51,5 @@ async def get_hotel_detail(hotel_id: int, search_id: str, db: AsyncSession = Dep
         logger.error(f"HTTPException: {http_ex.detail}")
         raise
     except Exception as e:
-        logger.error(f"Unexpected error occurred: {e}")
+        logger.error(f"Unexpected error occurred: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
