@@ -86,7 +86,7 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
             logger.info(f"Availability data received for {len(availability_data.get('properties', []))} properties")
             
             # Save the search result to the database
-            search_id = availability_data.get('searchId', str(room_request.cityId))  # Use cityId as fallback if searchId is not present
+            search_id = str(availability_data.get('searchId', str(room_request.cityId)))  # Convert search_id to string
             try:
                 await save_search_result(db, search_id, availability_data)
                 logger.info(f"Search result saved with search ID: {search_id}")
@@ -125,12 +125,18 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
                 logger.info(f"Live data found for hotel {hotel['hotel_id']}")
                 rooms = live_data.get("rooms", [])
                 hotel_data.rooms = [
-                    Room(roomId=room["roomId"], roomName=room["roomName"], price=room["totalPayment"]["inclusive"])
+                    Room(
+                        roomId=room["roomId"],
+                        roomName=room["roomName"],
+                        price=room["totalPayment"]["inclusive"],
+                        currency="USD",
+                        benefits=[benefit["benefitName"] for benefit in room.get("benefits", [])]
+                    )
                     for room in rooms
                 ]
                 if rooms:
                     hotel_data.cheapest_price = min(room["totalPayment"]["inclusive"] for room in rooms)
-                    hotel_data.benefits = list(set(benefit["translatedBenefitName"] for room in rooms for benefit in room.get("benefits", [])))
+                    hotel_data.benefits = list(set(benefit["benefitName"] for room in rooms for benefit in room.get("benefits", [])))
                     hotel_data.free_cancellation = any(room.get("freeCancellation", False) for room in rooms)
                     hotel_data.free_breakfast = any(room.get("freeBreakfast", False) for room in rooms)
             else:
@@ -142,7 +148,8 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
             logger.warning(f"No available hotels found with live data for city ID: {room_request.cityId}")
 
         logger.info(f"Returning {len(combined_data)} hotels with availability data")
-        return HotelListResponse(hotels=combined_data)
+        return HotelListResponse(hotels=combined_data, search_id=search_id)
+
     except Exception as e:
         logger.error(f"Unexpected error occurred: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")

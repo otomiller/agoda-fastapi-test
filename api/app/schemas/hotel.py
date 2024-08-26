@@ -1,5 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
+from app.schemas.room import Room 
+from typing import Optional
 
 
 class HotelBase(BaseModel):
@@ -41,35 +43,41 @@ class HotelDetails(BaseModel):
     facilities: List[Dict[str, Any]]
     room_types: List[RoomType]
 
-class HotelDetailResponse(BaseModel):
+class HotelResponse(BaseModel):
     hotel_id: int
     hotel_name: str
-    star_rating: int
+    star_rating: float
     address: str
+    image_url: str
     description: str
-    amenities: List[str]
+    cheapest_price: Optional[float]  # Allow None
+    benefits: List[str]
+    free_cancellation: bool
+    free_breakfast: bool
     rooms: List[Room]
     
-# Add the missing schemas
-class RoomRequest(BaseModel):
-    checkIn: str
-    checkOut: str
-    rooms: int
-    adults: int
-    children: int
-    childrenAges: List[int]
-    cityId: int
 
-class Room(BaseModel):
-    roomId: int
-    roomName: str
-    price: float
-    currency: str
-    benefits: List[str]
+class RoomRequest(BaseModel):
+    checkIn: str = Field(..., example="2024-11-23")
+    checkOut: str = Field(..., example="2024-11-28")
+    rooms: int = Field(..., example=1)
+    adults: int = Field(..., example=2)
+    children: int = Field(..., example=2)
+    childrenAges: List[int] = Field(..., example=[5, 6])
+    cityId: int = Field(..., example=3987)
+
+# class Room(BaseModel):
+#     roomId: int
+#     roomName: str
+#     price: float
+#     currency: str
+#     benefits: List[str]
 
 class HotelListResponse(BaseModel):
-    hotels: List[Hotel]
-    rooms: List[Room]
+    hotels: List[HotelResponse]
+    message: Optional[str] = None
+    search_id: Optional[str] = None
+
 
 class RoomType(BaseModel):
     id: int
