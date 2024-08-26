@@ -17,12 +17,22 @@ class Hotel(Base):
     addresses = relationship("Address", back_populates="hotel")
     pictures = relationship("Picture", back_populates="hotel")
 
+# class HotelDescription(Base):
+#     __tablename__ = "hotel_descriptions"
+
+#     hotel_id = Column(Integer, ForeignKey("hotels.hotel_id"), primary_key=True)
+#     overview = Column(Text)
+
+#     hotel = relationship("Hotel", back_populates="description")
+
+
 class HotelDescription(Base):
     __tablename__ = "hotel_descriptions"
 
-    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id"), primary_key=True)
+    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id", ondelete="CASCADE"), primary_key=True)
+    description_text = Column(Text)
     overview = Column(Text)
-
+    
     hotel = relationship("Hotel", back_populates="description")
 
 class Address(Base):

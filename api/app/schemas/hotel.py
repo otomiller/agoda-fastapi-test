@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 
+
 class HotelBase(BaseModel):
     hotel_id: int
     hotel_name: str
@@ -40,9 +41,15 @@ class HotelDetails(BaseModel):
     facilities: List[Dict[str, Any]]
     room_types: List[RoomType]
 
-class HotelResponse(BaseModel):
-    hotels: List[Hotel]
-
+class HotelDetailResponse(BaseModel):
+    hotel_id: int
+    hotel_name: str
+    star_rating: int
+    address: str
+    description: str
+    amenities: List[str]
+    rooms: List[Room]
+    
 # Add the missing schemas
 class RoomRequest(BaseModel):
     checkIn: str
@@ -51,6 +58,7 @@ class RoomRequest(BaseModel):
     adults: int
     children: int
     childrenAges: List[int]
+    cityId: int
 
 class Room(BaseModel):
     roomId: int
