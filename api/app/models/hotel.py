@@ -21,9 +21,8 @@ class Hotel(Base):
 class HotelDescription(Base):
     __tablename__ = "hotel_descriptions"
 
-    id = Column(Integer, primary_key=True, index=True)
-    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id", ondelete="CASCADE"), nullable=False)
-    overview = Column(Text)
+    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id", ondelete="CASCADE"), primary_key=True)
+    description_text = Column(Text)
 
     hotel = relationship("Hotel", back_populates="description")
 
