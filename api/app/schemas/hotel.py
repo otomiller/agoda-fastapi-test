@@ -50,7 +50,8 @@ class RoomRequest(BaseModel):
     rooms: int
     adults: int
     children: int
-    childrenAges: List[int]
+    childrenAges: Optional[List[int]] = []
+    cityId: int
 
 class Room(BaseModel):
     roomId: int
