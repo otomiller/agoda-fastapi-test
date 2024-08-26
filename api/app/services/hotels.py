@@ -53,7 +53,7 @@ async def get_hotels_from_db(db: AsyncSession, city_id: int) -> List[Dict]:
             ''
         ).label('address'),
         func.coalesce(
-            select(HotelDescription.overview)
+            select(HotelDescription.description_text)
             .where(HotelDescription.hotel_id == Hotel.hotel_id)
             .limit(1)
             .scalar_subquery(),
