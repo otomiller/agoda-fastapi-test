@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
-from app.core.database_config import Base  # Use this as your Base
+from app.core.database_config import Base
 
 class Hotel(Base):
     __tablename__ = "hotels"
@@ -17,16 +17,13 @@ class Hotel(Base):
     addresses = relationship("Address", back_populates="hotel")
     pictures = relationship("Picture", back_populates="hotel")
 
-
 class HotelDescription(Base):
     __tablename__ = "hotel_descriptions"
 
-    id = Column(Integer, primary_key=True, index=True)
-    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id", ondelete="CASCADE"), nullable=False)
+    hotel_id = Column(Integer, ForeignKey("hotels.hotel_id"), primary_key=True)
     overview = Column(Text)
 
     hotel = relationship("Hotel", back_populates="description")
-
 
 class Address(Base):
     __tablename__ = "addresses"
@@ -37,18 +34,17 @@ class Address(Base):
 
     hotel = relationship("Hotel", back_populates="addresses")
 
-
 class Picture(Base):
     __tablename__ = "pictures"
 
     id = Column(Integer, primary_key=True, index=True)
     hotel_id = Column(Integer, ForeignKey("hotels.hotel_id", ondelete="CASCADE"), nullable=False)
-    caption = Column(String)
-    url = Column(String)
+    caption = Column(String, nullable=True)  # Make sure this column exists
+    url = Column(String, nullable=False)
 
     hotel = relationship("Hotel", back_populates="pictures")
 
-
+    
 class SearchResult(Base):
     __tablename__ = "search_results"
 

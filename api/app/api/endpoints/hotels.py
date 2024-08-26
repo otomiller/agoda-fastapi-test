@@ -56,6 +56,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 import logging
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.database import get_db
 from app.schemas.hotel import RoomRequest, HotelResponse, Room, HotelListResponse
@@ -93,8 +94,7 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
                 logger.error(f"Error saving search result: {e}")
                 # Continue with the request even if saving the search result fails
         except httpx.HTTPError as e:
-            logger.error(f"HTTP error occurred: {e}")
-            logger.error(f"Response content: {e.response.text if e.response else 'No response content'}")
+            logger.error(f"HTTP error occurred while fetching availability: {e}")
             raise HTTPException(status_code=500, detail=f"Error fetching availability data: {str(e)}")
 
         logger.info("Combining hotel and availability data")
@@ -137,6 +137,9 @@ async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_d
                 logger.warning(f"No live data found for hotel {hotel['hotel_id']}")
             
             combined_data.append(hotel_data)
+
+        if not combined_data:
+            logger.warning(f"No available hotels found with live data for city ID: {room_request.cityId}")
 
         logger.info(f"Returning {len(combined_data)} hotels with availability data")
         return HotelListResponse(hotels=combined_data)

@@ -3,8 +3,7 @@ from fastapi import FastAPI
 import sentry_sdk
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.logging import LoggingIntegration
-from app.api.endpoints import hotels
-from app.api.endpoints import hotel_details
+from app.api.endpoints import hotels, hotel_details
 from app.core.config import settings
 
 # Configure Sentry logging integration
@@ -29,9 +28,9 @@ app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
 # Add Sentry middleware
 app.add_middleware(SentryAsgiMiddleware)
 
-# Include routers for your API endpoints
-app.include_router(hotels.router, prefix="/api")
-app.include_router(hotel_details.router, prefix="/api")
+# Include routers
+app.include_router(hotels.router, prefix="/api", tags=["hotels"])
+app.include_router(hotel_details.router, prefix="/api", tags=["hotel details"])
 
 # Test route for Sentry (optional)
 @app.get("/sentry-debug")
