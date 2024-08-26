@@ -94,3 +94,10 @@ async def fetch_availability(room_request: RoomRequest):
     Fetch availability for the sandbox mode only.
     """
     return await fetch_availability_for_sandbox(room_request)
+
+async def fetch_availability_for_hotel(hotel_id: int, search_id: str) -> dict:
+    url = f"https://hotelapi.loyalty.dev/api/hotels/{hotel_id}/availability?search_id={search_id}"
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
+        response.raise_for_status()
+        return response.json()

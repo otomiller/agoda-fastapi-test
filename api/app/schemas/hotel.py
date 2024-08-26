@@ -30,3 +30,12 @@ class HotelResponse(BaseModel):
 class HotelListResponse(BaseModel):
     hotels: List[HotelResponse]
     message: Optional[str] = None
+
+class HotelDetailResponse(BaseModel):
+    hotel_id: int
+    hotel_name: str
+    star_rating: int
+    address: str
+    description: str
+    amenities: List[str]
+    rooms: List[Room]    
