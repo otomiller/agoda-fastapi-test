@@ -52,8 +52,8 @@ async def save_search_result(db: AsyncSession, search_id: str | int, response_da
     Save the search result to the database.
     """
     search_result = SearchResult(
-        search_id=str(search_id),  # Convert to string
-        response_data=json.dumps(response_data)
+        search_id=str(search_id),  # Convert to string if necessary
+        response_data=response_data  # Pass the dictionary directly to store it as JSONB
     )
     db.add(search_result)
     await db.commit()
