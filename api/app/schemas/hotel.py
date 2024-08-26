@@ -1,41 +1,38 @@
-from pydantic import BaseModel
 from typing import List, Optional
+from pydantic import BaseModel
 
 class RoomRequest(BaseModel):
-    checkIn: str
-    checkOut: str
+    city_id: int
+    checkin: str
+    checkout: str
     rooms: int
     adults: int
     children: int
-    cityId: int
+    cid: Optional[int] = None
+    search_id: Optional[str] = None
 
 class Room(BaseModel):
-    roomId: int
-    roomName: str
+    room_id: int
+    room_name: str
     price: float
+    currency: str
 
 class HotelResponse(BaseModel):
     hotel_id: int
     hotel_name: str
     star_rating: float
-    image_url: Optional[str] = None
-    address: Optional[str] = None
-    description: Optional[str] = None
-    cheapest_price: Optional[float] = None
-    benefits: Optional[List[str]] = None
-    free_cancellation: Optional[bool] = None
-    free_breakfast: Optional[bool] = None
-    rooms: Optional[List[Room]] = None
+    address: str
+    image_url: str
+    description: str
 
 class HotelListResponse(BaseModel):
     hotels: List[HotelResponse]
-    message: Optional[str] = None
 
 class HotelDetailResponse(BaseModel):
     hotel_id: int
     hotel_name: str
-    star_rating: int
+    star_rating: float
     address: str
     description: str
     amenities: List[str]
-    rooms: List[Room]    
+    rooms: List[Room]
