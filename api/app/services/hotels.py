@@ -37,7 +37,7 @@ async def get_hotels_from_db(db: AsyncSession, city_id: int) -> List[Dict]:
     query = select(
         Hotel.hotel_id,
         Hotel.hotel_name,
-        Hotel.star_rating,
+        Hotel.star_rating.cast(Float),  # Cast to Float
         func.coalesce(
             select(Picture.url)
             .where((Picture.hotel_id == Hotel.hotel_id) & (Picture.caption == 'Exterior view'))
