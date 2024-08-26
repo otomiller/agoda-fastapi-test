@@ -69,6 +69,7 @@ logger = logging.getLogger(__name__)
 @router.post("/hotels", response_model=HotelListResponse)
 async def get_hotels(room_request: RoomRequest, db: AsyncSession = Depends(get_db)):
     try:
+        logger.info(f"Received request: {room_request}")
         logger.info(f"Fetching hotels for city ID: {room_request.cityId}")
         hotels = await get_hotels_from_db(db, room_request.cityId)
 
