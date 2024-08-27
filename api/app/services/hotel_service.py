@@ -5,6 +5,14 @@ from app.schemas.hotel import HotelDetails, RoomType
 from app.models.hotel import Hotel, Address, Picture, SearchResult
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
+from app.schemas.hotel import HotelDetails, RoomType
+from app.models.hotel import Hotel, Address, Picture, SearchResult
+from sqlalchemy.exc import NoResultFound, MultipleResultsFound
+
 async def get_hotel_details(db: AsyncSession, hotel_id: int, search_id: str) -> HotelDetails:
     try:
         # Fetch hotel basic info with address and pictures in a single query
@@ -53,6 +61,17 @@ async def get_hotel_details(db: AsyncSession, hotel_id: int, search_id: str) -> 
             for room in hotel_data.get('rooms', [])
         ]
 
+        # Execute the custom SQL query
+        query = text("""
+            SELECT * 
+            FROM public.room_types 
+            WHERE hotel_id = :hotel_id 
+            AND hotel_room_type_id = ANY(:room_ids)
+        """)
+        room_ids = [room['roomId'] for room in hotel_data.get('rooms', [])]
+        result = await db.execute(query, {"hotel_id": hotel_id, "room_ids": room_ids})
+        room_types_data = [dict(row) for row in result]
+
         hotel_details = HotelDetails(
             hotel_name=hotel.hotel_name,
             address_line_1=address.address_line_1,
@@ -60,7 +79,8 @@ async def get_hotel_details(db: AsyncSession, hotel_id: int, search_id: str) -> 
             latitude=hotel.latitude,
             images=images,
             facilities=[],  # You might want to fetch facilities separately
-            room_types=room_types
+            room_types=room_types,
+            room_types_data=room_types_data  # Add the query result to the response
         )
 
         return hotel_details
