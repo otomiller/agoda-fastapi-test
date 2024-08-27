@@ -6,6 +6,7 @@ from app.models.hotel import Hotel, Address, Picture, SearchResult
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
 from sqlalchemy import text
+from sqlalchemy.sql import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
